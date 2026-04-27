@@ -56,15 +56,17 @@
     <section class="panel battle">
       <h2 id="battleTitle">Choose a world to start</h2>
       <div class="arena">
-        <div class="fighter">
+        <div class="fighter" id="playerFighter">
           <h3>You</h3>
           <div class="hp"><span>HP</span><progress id="playerHpBar" max="100" value="100"></progress><strong id="playerHp">100</strong></div>
           <div class="energy"><span>Energy</span><strong id="playerEnergy">0</strong></div>
+          <div class="impact" id="playerImpact"></div>
         </div>
-        <div class="fighter">
+        <div class="fighter" id="enemyFighter">
           <h3 id="enemyName">Enemy</h3>
           <div class="hp"><span>HP</span><progress id="enemyHpBar" max="100" value="100"></progress><strong id="enemyHp">100</strong></div>
           <div class="energy"><span>Energy</span><strong id="enemyEnergy">0</strong></div>
+          <div class="impact" id="enemyImpact"></div>
         </div>
       </div>
 
@@ -142,6 +144,9 @@
       <button id="summonTenBtn">Summon x10 (270 Gems)</button>
     </div>
     <div id="companionRoster" class="quest-grid"></div>
+    <h3>Character Art Gallery</h3>
+    <p>Drop AI art files in `assets/waifus/` to replace placeholders.</p>
+    <div id="artGallery" class="quest-grid"></div>
     <h3>Bond Story</h3>
     <div id="bondSceneList" class="quest-grid"></div>
   </section>

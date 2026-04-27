@@ -50,6 +50,8 @@ Notes:
 - Arcade mini-games with daily play limits and reward loops.
 - Interactive mini-games: timing challenge, memory sequence, and lane-choice runner.
 - Browser server with Online Plaza room join/chat/state sharing via WebSocket.
+- Companion art gallery slots (`assets/waifus/`) with portrait rendering hooks.
+- Shiny foil card variants and animated battle hit/attack effects.
 
 ## Expansion Hooks
 

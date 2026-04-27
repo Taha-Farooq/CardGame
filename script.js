@@ -87,6 +87,15 @@ const companionCatalog = [
   { id: "sera", name: "Sera Prismveil", rarity: "Epic", vibe: "Prism Shrine Keeper", hpBonus: 14, burstStart: 12, goldBonusPct: 9, blurb: "Channels rainbow sigils that empower every spell.", skillType: "doubleStrike", skillValue: 12 },
 ];
 
+const companionArt = {
+  luna: "assets/waifus/waifu_luna.png",
+  aiko: "assets/waifus/waifu_aiko.png",
+  mira: "assets/waifus/waifu_mira.png",
+  nyx: "assets/waifus/waifu_nyx.png",
+  kiko: "assets/waifus/waifu_kiko.png",
+  sera: "assets/waifus/waifu_sera.png",
+};
+
 const bannerRotation = [
   { dateKey: "Mon", companionId: "nyx" },
   { dateKey: "Tue", companionId: "sera" },
@@ -189,7 +198,7 @@ function randomCard() {
   const deckIds = state.deckList?.length ? state.deckList : ["bolt", "guard", "focus", "slash", "drain", "combo"];
   const randomId = deckIds[Math.floor(Math.random() * deckIds.length)];
   const card = deckCatalog.find((c) => c.id === randomId) || deckCatalog[0];
-  return { ...card };
+  return { ...card, shiny: Math.random() < 0.1 };
 }
 
 function log(msg) {
@@ -411,6 +420,7 @@ function playCard(index) {
   let dealt = 0;
 
   if (card.type === "attack") {
+    triggerAttackAnimation("player", "enemy");
     dealt = damageTarget(state.enemy, card.value);
     state.enemy.hp -= dealt;
     state.turnAttackPlayed = true;
@@ -421,12 +431,14 @@ function playCard(index) {
   } else if (card.type === "buff") {
     state.player.energy += card.value;
   } else if (card.type === "lifesteal") {
+    triggerAttackAnimation("player", "enemy");
     dealt = damageTarget(state.enemy, card.value);
     state.enemy.hp -= dealt;
     state.player.hp = clamp(state.player.hp + Math.floor(card.value / 2), 0, state.player.maxHp);
     state.turnAttackPlayed = true;
     state.player.burst += 9;
   } else if (card.type === "combo") {
+    triggerAttackAnimation("player", "enemy");
     let value = card.value;
     if (state.turnAttackPlayed) value += 10;
     dealt = damageTarget(state.enemy, value);
@@ -456,6 +468,7 @@ function enemyTurn() {
     state.enemy.shield += shieldGain;
     actionText = `${state.enemy.name} braces for ${shieldGain} shield.`;
   } else {
+    triggerAttackAnimation("enemy", "player");
     const dmg = 8 + Math.floor(Math.random() * 8) + Math.floor(state.enemy.energy * 1.5);
     const final = damageTarget(state.player, dmg);
     state.player.hp -= final;
@@ -481,12 +494,28 @@ function useBurst() {
     return;
   }
   const burstDamage = 42;
+  triggerAttackAnimation("player", "enemy");
   const dealt = damageTarget(state.enemy, burstDamage);
   state.enemy.hp -= dealt;
   state.player.burst = 0;
   log(`Astral Burst lands for ${dealt}!`);
   if (state.enemy.hp <= 0) winBattle();
   render();
+}
+
+function triggerAttackAnimation(attacker, defender) {
+  const attackerEl = document.getElementById(attacker === "player" ? "playerFighter" : "enemyFighter");
+  const impactEl = document.getElementById(defender === "player" ? "playerImpact" : "enemyImpact");
+  if (attackerEl) {
+    attackerEl.classList.remove("attack-swing");
+    void attackerEl.offsetWidth;
+    attackerEl.classList.add("attack-swing");
+  }
+  if (impactEl) {
+    impactEl.classList.remove("hit");
+    void impactEl.offsetWidth;
+    impactEl.classList.add("hit");
+  }
 }
 
 function winBattle() {
@@ -1149,11 +1178,12 @@ function renderHand() {
   hand.innerHTML = "";
   state.hand.forEach((card, index) => {
     const el = document.createElement("article");
-    el.className = "card";
+    el.className = `card ${card.shiny ? "shiny" : ""}`.trim();
     el.innerHTML = `
       <h4>${card.name}</h4>
       <p>Cost: ${card.cost}</p>
       <p>${card.text}</p>
+      <p>${card.shiny ? "Shiny Foil" : "Standard"}</p>
     `;
     const btn = document.createElement("button");
     btn.textContent = "Play";
@@ -1355,6 +1385,7 @@ function renderCompanions() {
     const card = document.createElement("article");
     card.className = `companion-card ${active ? "active" : ""}`.trim();
     card.innerHTML = `
+      <img class="portrait" src="${companionArt[id] || ""}" alt="${meta.name} portrait" onerror="this.style.display='none'" />
       <h4>${meta.name}</h4>
       <p>Rarity: ${meta.rarity}</p>
       <p>Vibe: ${meta.vibe}</p>
@@ -1370,6 +1401,23 @@ function renderCompanions() {
     btn.onclick = () => setActiveCompanion(id);
     card.appendChild(btn);
     container.appendChild(card);
+  });
+}
+
+function renderArtGallery() {
+  const gallery = document.getElementById("artGallery");
+  if (!gallery) return;
+  gallery.innerHTML = "";
+  companionCatalog.forEach((c) => {
+    const card = document.createElement("article");
+    card.className = "art-card";
+    card.innerHTML = `
+      <img class="portrait" src="${companionArt[c.id] || ""}" alt="${c.name} splash art" onerror="this.style.opacity='0.35'" />
+      <h4>${c.name}</h4>
+      <p>${c.vibe}</p>
+      <p>File: ${companionArt[c.id] || "missing"}</p>
+    `;
+    gallery.appendChild(card);
   });
 }
 
@@ -1544,6 +1592,7 @@ function render() {
   renderDeckBuilder();
   renderEvents();
   renderCompanions();
+  renderArtGallery();
   renderBondScenes();
   renderPets();
   renderMiniGameArea();

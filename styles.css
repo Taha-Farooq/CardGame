@@ -134,6 +134,8 @@ button:disabled {
   background: #1a1a30;
   border-radius: 8px;
   padding: 0.6rem;
+  position: relative;
+  overflow: hidden;
 }
 
 .hp, .energy {
@@ -160,6 +162,25 @@ progress {
   border: 1px solid #6a5fc6;
   border-radius: 8px;
   padding: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.card.shiny {
+  border-color: #ffd46e;
+  box-shadow: 0 0 10px rgba(255, 212, 110, 0.6);
+}
+
+.card.shiny::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: -60%;
+  width: 50%;
+  height: 140%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  transform: rotate(14deg);
+  animation: foilSweep 2.4s linear infinite;
 }
 
 .card p {
@@ -217,6 +238,41 @@ progress {
 .companion-card.active {
   border-color: #f8b74a;
   box-shadow: 0 0 0 1px #f8b74a inset;
+}
+
+.portrait {
+  width: 100%;
+  height: 170px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-bottom: 0.4rem;
+  border: 1px solid #6570bf;
+  background: linear-gradient(150deg, #2e3568, #171d38);
+}
+
+.art-card {
+  background: #1a2038;
+  border: 1px solid #555fa8;
+  border-radius: 10px;
+  padding: 0.6rem;
+}
+
+.impact {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.impact.hit {
+  animation: hitFlash 280ms ease-out;
+}
+
+#playerFighter.attack-swing {
+  animation: playerSwing 260ms ease-out;
+}
+
+#enemyFighter.attack-swing {
+  animation: enemySwing 260ms ease-out;
 }
 
 .bond-scene {
@@ -337,4 +393,27 @@ li {
   .layout {
     grid-template-columns: 1fr;
   }
+}
+
+@keyframes foilSweep {
+  0% { left: -65%; }
+  100% { left: 130%; }
+}
+
+@keyframes hitFlash {
+  0% { background: rgba(255, 95, 95, 0.0); }
+  25% { background: rgba(255, 95, 95, 0.35); }
+  100% { background: rgba(255, 95, 95, 0.0); }
+}
+
+@keyframes playerSwing {
+  0% { transform: translateX(0); }
+  45% { transform: translateX(10px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes enemySwing {
+  0% { transform: translateX(0); }
+  45% { transform: translateX(-10px); }
+  100% { transform: translateX(0); }
 }
