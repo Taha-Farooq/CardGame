@@ -210,6 +210,7 @@ let online = {
   lobbyReason: "",
   moderationSummary: null,
   moderationEvents: [],
+  mutedUntil: 0,
 };
 
 function applySafetyPreset() {
@@ -383,6 +384,9 @@ function connectOnline() {
       pushOnlineLog(`[Safety] Assigned to ${online.lobbyType} lobby.`);
     } else if (data.type === "moderation") {
       pushOnlineLog(`[Moderation] ${data.action}: ${data.reason}`);
+      if (data.action === "muted") {
+        online.mutedUntil = Math.max(online.mutedUntil || 0, Number(data.mutedUntil) || 0);
+      }
       if (data.action === "ban") {
         applyAutoBan(data.reason || "Server safety ban");
       } else {
@@ -464,6 +468,12 @@ function sendChat() {
   const input = document.getElementById("chatInput");
   const text = (input.value || "").trim();
   if (!text) return;
+  if (online.mutedUntil && Date.now() < online.mutedUntil) {
+    const waitSec = Math.ceil((online.mutedUntil - Date.now()) / 1000);
+    pushOnlineLog(`[Moderation] You are muted. Try again in ${waitSec}s.`);
+    renderOnline();
+    return;
+  }
   if (state.profile.ageBand === "under13") {
     pushOnlineLog("[Safety] Under-13 profiles use quick chat only.");
     recordModerationIncident("blocked", "Under-13 free text blocked", text);
@@ -556,6 +566,12 @@ function sendQuickChat(text) {
     renderOnline();
     return;
   }
+  if (online.mutedUntil && Date.now() < online.mutedUntil) {
+    const waitSec = Math.ceil((online.mutedUntil - Date.now()) / 1000);
+    pushOnlineLog(`[Moderation] You are muted. Try again in ${waitSec}s.`);
+    renderOnline();
+    return;
+  }
   const rateLimit = evaluateRateLimit();
   if (!rateLimit.allow) {
     pushOnlineLog(`[Safety] ${rateLimit.reason}`);
@@ -632,8 +648,9 @@ function renderOnline() {
   if (!status || !presence || !chat || !health) return;
   const bannedTag = state.profile.isBanned ? " | CHAT RESTRICTED" : "";
   const lobbyTag = online.lobbyType ? ` | Lobby: ${online.lobbyType}` : "";
+  const mutedTag = online.mutedUntil && Date.now() < online.mutedUntil ? " | TEMP MUTED" : "";
   status.textContent = online.connected
-    ? `Connected (${online.mode})${online.roomId ? ` | Room: ${online.roomId}` : ""}${lobbyTag}${bannedTag}`
+    ? `Connected (${online.mode})${online.roomId ? ` | Room: ${online.roomId}` : ""}${lobbyTag}${mutedTag}${bannedTag}`
     : `Not connected${bannedTag}`;
   if (online.connected && online.mode === "websocket") {
     const latency = online.lastLatencyMs == null ? "connected" : `${online.lastLatencyMs} ms`;
@@ -1890,13 +1907,14 @@ function render() {
   const chatInput = document.getElementById("chatInput");
   const chatSendBtn = document.getElementById("chatSendBtn");
   const quickChatBar = document.getElementById("quickChatBar");
+  const tempMuted = online.mutedUntil && Date.now() < online.mutedUntil;
   if (chatInput) {
-    chatInput.disabled = !!state.profile.isBanned || state.profile.ageBand === "under13";
+    chatInput.disabled = !!state.profile.isBanned || state.profile.ageBand === "under13" || tempMuted;
     chatInput.placeholder = state.profile.ageBand === "under13"
       ? "Under-13 quick chat enabled"
-      : "Send room message";
+      : (tempMuted ? "Temporarily muted by server moderation" : "Send room message");
   }
-  if (chatSendBtn) chatSendBtn.disabled = !!state.profile.isBanned;
+  if (chatSendBtn) chatSendBtn.disabled = !!state.profile.isBanned || tempMuted;
   if (quickChatBar) {
     quickChatBar.innerHTML = "";
     if (state.profile.ageBand === "under13" && !state.profile.isBanned) {

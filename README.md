@@ -59,6 +59,7 @@ Notes:
 - Server-enforced lobby routing (`youth` / `suspect` / `adult`) with safety-based reassignment.
 - Anti-evasion chat moderation normalization (leet/symbol obfuscation handling) and chat-bomb protection.
 - Moderator Console panel with live server lobby counts and recent moderation events.
+- Server-side temporary auto-mute escalation for repeated spam/moderation violations.
 - Original anime space-fantasy tone inspired by cosmic rail-journey RPG vibes (without using third-party IP assets or names).
 
 ## Bot Council Automation

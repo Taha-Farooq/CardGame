@@ -23,6 +23,8 @@ const SERVER_CHAT_LIMITS = {
   maxMessagesPerWindow: 5,
   maxCharsPerWindow: 520,
   maxLength: 180,
+  softMuteMs: 2 * 60 * 1000,
+  hardMuteMs: 15 * 60 * 1000,
 };
 
 const BLOCKED_PATTERNS = [
@@ -224,7 +226,26 @@ function determineLobbyType(meta, socket) {
 
 function sendModeration(socket, action, reason) {
   const msg = { type: "moderation", action, reason, ts: Date.now() };
+  if (action === "muted") {
+    msg.mutedUntil = socket.__mutedUntil || 0;
+  }
   socket.write(encodeWsFrame(JSON.stringify(msg)));
+}
+
+function applyTemporaryMute(socket, reason, durationMs, username, roomId) {
+  const now = Date.now();
+  const current = socket.__mutedUntil || 0;
+  socket.__mutedUntil = Math.max(current, now + durationMs);
+  sendModeration(socket, "muted", reason);
+  pushModerationEvent({
+    eventType: "temp_mute",
+    username,
+    roomId,
+    lobbyType: socket.__lobbyType || "unknown",
+    reason,
+    safetyScore: socket.__safetyScore || 0,
+    mutedUntil: socket.__mutedUntil,
+  });
 }
 
 function pushModerationEvent(event) {
@@ -351,6 +372,10 @@ server.on("upgrade", (req, socket) => {
       const room = rooms.get(roomId);
       if (!room) return;
       const username = room.users.get(socket) || "Mage";
+      if (socket.__mutedUntil && Date.now() < socket.__mutedUntil) {
+        sendModeration(socket, "muted", "You are temporarily muted due to safety violations.");
+        return;
+      }
       const rawText = String(message.text || "");
       const bombReason = evaluateChatBomb(rawText);
       if (bombReason) {
@@ -364,6 +389,9 @@ server.on("upgrade", (req, socket) => {
           reason: bombReason,
           safetyScore: socket.__safetyScore || 0,
         });
+        if ((socket.__safetyScore || 0) >= 5) {
+          applyTemporaryMute(socket, "Repeated spam patterns triggered auto-mute.", SERVER_CHAT_LIMITS.softMuteMs, username, roomId);
+        }
         return;
       }
       const rate = evaluateSocketRate(socket, rawText.length);
@@ -378,6 +406,9 @@ server.on("upgrade", (req, socket) => {
           reason: rate.reason,
           safetyScore: socket.__safetyScore || 0,
         });
+        if ((socket.__safetyScore || 0) >= 5) {
+          applyTemporaryMute(socket, "Rate-limit abuse triggered temporary mute.", SERVER_CHAT_LIMITS.softMuteMs, username, roomId);
+        }
         return;
       }
       const moderation = evaluateChatContent(rawText);
@@ -410,6 +441,9 @@ server.on("upgrade", (req, socket) => {
         if ((socket.__safetyScore || 0) >= 6 && socket.__lobbyType !== "suspect") {
           const baseRoom = socket.__baseRoom || "academy-hall";
           moveSocketToLobby(socket, username, baseRoom, "suspect", "Repeated safety violations triggered suspect routing.");
+        }
+        if ((socket.__safetyScore || 0) >= 8) {
+          applyTemporaryMute(socket, "High-risk moderation score triggered protective mute.", SERVER_CHAT_LIMITS.hardMuteMs, username, roomId);
         }
         return;
       }
