@@ -80,6 +80,24 @@ button:disabled {
   margin: 0 1rem 1rem;
 }
 
+.legal-banner {
+  margin: 1rem 1rem 0;
+}
+
+.legal-banner a {
+  display: inline-block;
+  background: #4d528f;
+  color: #fff;
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.legal-banner a:hover {
+  filter: brightness(1.08);
+}
+
 .wallet {
   display: flex;
   gap: 1rem;

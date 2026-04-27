@@ -567,24 +567,24 @@ function renderEconomy() {
   const entries = Object.entries(state.inventory);
   if (!entries.length) {
     invContainer.innerHTML = "<article class='inv-item'><p>No items yet.</p></article>";
-    return;
+  } else {
+    entries.forEach(([itemId, count]) => {
+      const item = shopCatalog.find((s) => s.id === itemId);
+      if (!item) return;
+      const card = document.createElement("article");
+      card.className = "inv-item";
+      card.innerHTML = `
+        <h4>${item.name}</h4>
+        <p>x${count}</p>
+        <p>${item.description}</p>
+      `;
+      const btn = document.createElement("button");
+      btn.textContent = "Use";
+      btn.onclick = () => useInventoryItem(item.id);
+      card.appendChild(btn);
+      invContainer.appendChild(card);
+    });
   }
-  entries.forEach(([itemId, count]) => {
-    const item = shopCatalog.find((s) => s.id === itemId);
-    if (!item) return;
-    const card = document.createElement("article");
-    card.className = "inv-item";
-    card.innerHTML = `
-      <h4>${item.name}</h4>
-      <p>x${count}</p>
-      <p>${item.description}</p>
-    `;
-    const btn = document.createElement("button");
-    btn.textContent = "Use";
-    btn.onclick = () => useInventoryItem(item.id);
-    card.appendChild(btn);
-    invContainer.appendChild(card);
-  });
 
   const questContainer = document.getElementById("questList");
   questContainer.innerHTML = "";

@@ -30,3 +30,10 @@ No install required.
 - Add more cards to `baseDeck`.
 - Replace gem-based unlocks with subscriptions, passes, or story keys.
 - Move to a client/server architecture when you want real accounts and multiplayer.
+
+## Legal Docs Included
+
+- `LICENSE` (proprietary commercial license)
+- `EULA.md`
+- `TERMS.md`
+- `PRIVACY.md`
