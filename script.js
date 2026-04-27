@@ -206,6 +206,8 @@ let online = {
   username: "Mage",
   lastPingSentAt: 0,
   lastLatencyMs: null,
+  lobbyType: "youth",
+  lobbyReason: "",
 };
 
 function applySafetyPreset() {
@@ -279,6 +281,37 @@ function recordModerationIncident(type, reason, text = "") {
   state.moderationIncidents = state.moderationIncidents.slice(0, 200);
 }
 
+function normalizeForModeration(text) {
+  const map = {
+    "@": "a",
+    "$": "s",
+    "0": "o",
+    "1": "i",
+    "3": "e",
+    "4": "a",
+    "5": "s",
+    "7": "t",
+    "!": "i",
+    "|": "i",
+    "+": "t",
+  };
+  return String(text || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/./g, (ch) => map[ch] || ch)
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getLocalLobbyType() {
+  const highRisk = state.profile.isBanned || state.moderationScore >= 6 || state.moderationStrikes >= 1;
+  if (highRisk) return "suspect";
+  if (state.profile.ageBand === "18plus") return "adult";
+  return "youth";
+}
+
 function connectOnline() {
   const isGitHubPages = window.location.hostname.endsWith("github.io");
   if (isGitHubPages) {
@@ -341,6 +374,18 @@ function connectOnline() {
       online.chat = history.reverse().slice(0, 40);
     } else if (data.type === "chat" && data.message) {
       pushOnlineLog(`[${new Date(data.message.ts).toLocaleTimeString()}] ${data.message.username}: ${data.message.text}`);
+    } else if (data.type === "roomAssignment") {
+      online.roomId = data.roomId || online.roomId;
+      online.lobbyType = data.lobbyType || online.lobbyType;
+      online.lobbyReason = data.reason || "";
+      pushOnlineLog(`[Safety] Assigned to ${online.lobbyType} lobby.`);
+    } else if (data.type === "moderation") {
+      pushOnlineLog(`[Moderation] ${data.action}: ${data.reason}`);
+      if (data.action === "ban") {
+        applyAutoBan(data.reason || "Server safety ban");
+      } else {
+        recordModerationIncident(data.action || "blocked", data.reason || "Server moderation event", "");
+      }
     } else if (data.type === "statePing") {
       if (data.from === "__server__" && typeof data.ts === "number") {
         online.lastLatencyMs = Date.now() - data.ts;
@@ -371,7 +416,7 @@ function joinOnlineRoom() {
   const roomInput = document.getElementById("roomIdInput");
   const username = (nameInput.value || state.profile.name || "Mage").trim().slice(0, 20);
   const rawRoom = (roomInput.value || "academy-hall").trim().slice(0, 30);
-  const roomPrefix = state.profile.ageBand === "18plus" ? "adult-" : "youth-";
+  const roomPrefix = `${getLocalLobbyType()}-`;
   const roomId = `${roomPrefix}${rawRoom}`.slice(0, 30);
   online.username = username;
   if (!online.connected) {
@@ -382,10 +427,19 @@ function joinOnlineRoom() {
   online.roomId = roomId;
   if (online.mode === "broadcast") {
     online.users = [username];
+    online.lobbyType = getLocalLobbyType();
+    online.lobbyReason = "Broadcast mode local safety routing.";
     sendOnline({ type: "presence", roomId, users: online.users });
     pushOnlineLog(`[System] Joined room: ${roomId} (GitHub Pages local mode)`);
   } else {
-    sendOnline({ type: "joinRoom", roomId, username });
+    sendOnline({
+      type: "joinRoom",
+      roomId,
+      username,
+      ageBand: state.profile.ageBand,
+      isSuspect: state.moderationScore >= 6 || state.moderationStrikes > 0 || state.profile.isBanned,
+      confirmedMature: state.profile.ageBand === "18plus" && !state.profile.isBanned,
+    });
     pushOnlineLog(`[System] Joined room: ${roomId}`);
   }
   renderOnline();
@@ -449,7 +503,7 @@ function sendChat() {
 }
 
 function evaluateChatMessage(text) {
-  const normalized = text.trim();
+  const normalized = normalizeForModeration(text);
   if (!normalized) return { action: "allow", reason: "", scoreDelta: 0 };
 
   if (hardBanPatterns.some((p) => p.test(normalized))) {
@@ -567,13 +621,15 @@ function renderOnline() {
   const chat = document.getElementById("onlineChatLog");
   if (!status || !presence || !chat || !health) return;
   const bannedTag = state.profile.isBanned ? " | CHAT RESTRICTED" : "";
+  const lobbyTag = online.lobbyType ? ` | Lobby: ${online.lobbyType}` : "";
   status.textContent = online.connected
-    ? `Connected (${online.mode})${online.roomId ? ` | Room: ${online.roomId}` : ""}${bannedTag}`
+    ? `Connected (${online.mode})${online.roomId ? ` | Room: ${online.roomId}` : ""}${lobbyTag}${bannedTag}`
     : `Not connected${bannedTag}`;
   if (online.connected && online.mode === "websocket") {
-    health.textContent = online.lastLatencyMs == null ? "Health: connected" : `Health: ${online.lastLatencyMs} ms`;
+    const latency = online.lastLatencyMs == null ? "connected" : `${online.lastLatencyMs} ms`;
+    health.textContent = `Health: ${latency}${online.lobbyReason ? ` | ${online.lobbyReason}` : ""}`;
   } else if (online.connected && online.mode === "broadcast") {
-    health.textContent = "Health: local-tab sync";
+    health.textContent = `Health: local-tab sync${online.lobbyReason ? ` | ${online.lobbyReason}` : ""}`;
   } else {
     health.textContent = "Health: unavailable";
   }

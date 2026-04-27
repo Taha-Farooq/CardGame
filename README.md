@@ -56,6 +56,8 @@ Notes:
 - Safety Hub with age-band presets, stricter youth defaults, and chat safety filtering.
 - Zero-tolerance moderation: auto-ban on meetup/off-platform solicitation patterns.
 - Under-13 quick-chat only mode, anti-spam chat cooldown/rate limits, and JSON incident log export.
+- Server-enforced lobby routing (`youth` / `suspect` / `adult`) with safety-based reassignment.
+- Anti-evasion chat moderation normalization (leet/symbol obfuscation handling) and chat-bomb protection.
 - Original anime space-fantasy tone inspired by cosmic rail-journey RPG vibes (without using third-party IP assets or names).
 
 ## Bot Council Automation

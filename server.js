@@ -16,6 +16,38 @@ const MIME = {
 };
 
 const rooms = new Map();
+const SERVER_CHAT_LIMITS = {
+  cooldownMs: 1800,
+  windowMs: 15000,
+  maxMessagesPerWindow: 5,
+  maxCharsPerWindow: 520,
+  maxLength: 180,
+};
+
+const BLOCKED_PATTERNS = [
+  /discord/i,
+  /snapchat|snap/i,
+  /whatsapp/i,
+  /telegram/i,
+  /kik/i,
+  /dm me|private chat|secret chat/i,
+  /send pic|photo of you|selfie/i,
+  /meet up|meet me|come alone/i,
+  /sexual|sexy|nude|naked|hot pics/i,
+  /http:\/\/|https:\/\//i,
+  /\b\d{7,}\b/,
+  /\b(fuck|bitch|slut|whore|cunt)\b/i,
+];
+
+const HARD_BAN_PATTERNS = [
+  /meet (you|u) (outside|irl|in person)/i,
+  /come to (my|the) (house|place)/i,
+  /where do you live|address/i,
+  /add me on|text me on|call me on/i,
+  /send me your (number|phone|snap|discord)/i,
+  /don't tell (your|ur) (parents|mom|dad)/i,
+  /keep (this|it) secret/i,
+];
 
 function sendFile(req, res) {
   const rawPath = req.url === "/" ? "/index.html" : req.url.split("?")[0];
@@ -104,6 +136,110 @@ function getOrCreateRoom(roomId) {
   return rooms.get(roomId);
 }
 
+function normalizeForModeration(text) {
+  const map = {
+    "@": "a",
+    "$": "s",
+    "0": "o",
+    "1": "i",
+    "3": "e",
+    "4": "a",
+    "5": "s",
+    "7": "t",
+    "!": "i",
+    "|": "i",
+    "+": "t",
+  };
+  const normalized = String(text || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/./g, (ch) => map[ch] || ch)
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return normalized;
+}
+
+function evaluateChatContent(text) {
+  const normalized = normalizeForModeration(text);
+  if (!normalized) return { action: "block", reason: "Empty chat content after normalization." };
+  if (HARD_BAN_PATTERNS.some((p) => p.test(normalized))) {
+    return { action: "ban", reason: "Unsafe contact solicitation detected." };
+  }
+  if (BLOCKED_PATTERNS.some((p) => p.test(normalized))) {
+    return { action: "block", reason: "Blocked language or off-platform contact pattern." };
+  }
+  return { action: "allow", reason: "" };
+}
+
+function evaluateChatBomb(text) {
+  const raw = String(text || "");
+  if (raw.length > SERVER_CHAT_LIMITS.maxLength) return "Message too long.";
+  if ((raw.match(/\n/g) || []).length > 3) return "Message flood formatting blocked.";
+  if (/(.)\1{14,}/.test(raw)) return "Repeated-character spam blocked.";
+  return "";
+}
+
+function evaluateSocketRate(socket, textLength) {
+  if (!socket.__chatWindow) socket.__chatWindow = [];
+  const now = Date.now();
+  socket.__chatWindow = socket.__chatWindow.filter((entry) => now - entry.ts <= SERVER_CHAT_LIMITS.windowMs);
+  if (socket.__lastChatAt && now - socket.__lastChatAt < SERVER_CHAT_LIMITS.cooldownMs) {
+    return { allow: false, reason: "Cooldown active." };
+  }
+  const messageCount = socket.__chatWindow.length;
+  const charsInWindow = socket.__chatWindow.reduce((acc, item) => acc + item.len, 0);
+  if (messageCount >= SERVER_CHAT_LIMITS.maxMessagesPerWindow) {
+    return { allow: false, reason: "Too many messages in a short window." };
+  }
+  if (charsInWindow + textLength > SERVER_CHAT_LIMITS.maxCharsPerWindow) {
+    return { allow: false, reason: "Chat bomb protection triggered." };
+  }
+  return { allow: true, reason: "" };
+}
+
+function registerSocketChat(socket, textLength) {
+  const now = Date.now();
+  socket.__lastChatAt = now;
+  if (!socket.__chatWindow) socket.__chatWindow = [];
+  socket.__chatWindow.push({ ts: now, len: textLength });
+}
+
+function getBaseRoom(roomId) {
+  const cleaned = String(roomId || "academy-hall").trim().slice(0, 30);
+  return cleaned.replace(/^(adult|youth|suspect)-/i, "").slice(0, 24) || "academy-hall";
+}
+
+function determineLobbyType(meta, socket) {
+  const ageBand = meta.ageBand === "18plus" ? "18plus" : (meta.ageBand || "unknown");
+  const confirmedMature = !!meta.confirmedMature && ageBand === "18plus";
+  const suspectSignals = !!meta.isSuspect || (socket.__safetyScore || 0) >= 6;
+  if (confirmedMature) return { lobbyType: "adult", reason: "Confirmed mature profile." };
+  if (suspectSignals) return { lobbyType: "suspect", reason: "Safety review routing enabled." };
+  if (ageBand === "18plus") return { lobbyType: "adult", reason: "Adult profile routed to adult lobby." };
+  return { lobbyType: "youth", reason: "Youth-safe lobby enforcement." };
+}
+
+function sendModeration(socket, action, reason) {
+  const msg = { type: "moderation", action, reason, ts: Date.now() };
+  socket.write(encodeWsFrame(JSON.stringify(msg)));
+}
+
+function moveSocketToLobby(socket, username, baseRoom, lobbyType, reason = "") {
+  removeFromRooms(socket);
+  const roomId = `${lobbyType}-${baseRoom}`.slice(0, 30);
+  const room = getOrCreateRoom(roomId);
+  room.clients.add(socket);
+  room.users.set(socket, username);
+  socket.__roomId = roomId;
+  socket.__baseRoom = baseRoom;
+  socket.__lobbyType = lobbyType;
+  socket.write(encodeWsFrame(JSON.stringify({ type: "chatHistory", chat: room.chat })));
+  socket.write(encodeWsFrame(JSON.stringify({ type: "roomAssignment", roomId, lobbyType, reason })));
+  broadcastRoom(roomId, { type: "presence", users: [...room.users.values()] });
+}
+
 function removeFromRooms(socket) {
   rooms.forEach((room, roomId) => {
     if (room.clients.has(socket)) {
@@ -152,15 +288,16 @@ server.on("upgrade", (req, socket) => {
     if (!message || typeof message !== "object") return;
 
     if (message.type === "joinRoom") {
-      removeFromRooms(socket);
-      const roomId = String(message.roomId || "academy").slice(0, 30);
+      const requestedRoom = String(message.roomId || "academy").slice(0, 30);
       const username = String(message.username || "Mage").slice(0, 20);
-      const room = getOrCreateRoom(roomId);
-      room.clients.add(socket);
-      room.users.set(socket, username);
-      socket.__roomId = roomId;
-      socket.write(encodeWsFrame(JSON.stringify({ type: "chatHistory", chat: room.chat })));
-      broadcastRoom(roomId, { type: "presence", users: [...room.users.values()] });
+      const baseRoom = getBaseRoom(requestedRoom);
+      const meta = {
+        ageBand: String(message.ageBand || "unknown"),
+        isSuspect: !!message.isSuspect,
+        confirmedMature: !!message.confirmedMature,
+      };
+      const assignment = determineLobbyType(meta, socket);
+      moveSocketToLobby(socket, username, baseRoom, assignment.lobbyType, assignment.reason);
       return;
     }
 
@@ -170,9 +307,40 @@ server.on("upgrade", (req, socket) => {
       const room = rooms.get(roomId);
       if (!room) return;
       const username = room.users.get(socket) || "Mage";
+      const rawText = String(message.text || "");
+      const bombReason = evaluateChatBomb(rawText);
+      if (bombReason) {
+        socket.__safetyScore = (socket.__safetyScore || 0) + 2;
+        sendModeration(socket, "blocked", bombReason);
+        return;
+      }
+      const rate = evaluateSocketRate(socket, rawText.length);
+      if (!rate.allow) {
+        socket.__safetyScore = (socket.__safetyScore || 0) + 1;
+        sendModeration(socket, "rate_limited", rate.reason);
+        return;
+      }
+      const moderation = evaluateChatContent(rawText);
+      if (moderation.action === "ban") {
+        socket.__safetyScore = 999;
+        sendModeration(socket, "ban", moderation.reason);
+        const baseRoom = socket.__baseRoom || "academy-hall";
+        moveSocketToLobby(socket, username, baseRoom, "suspect", "Safety incident routed this user to suspect lobby.");
+        return;
+      }
+      if (moderation.action === "block") {
+        socket.__safetyScore = (socket.__safetyScore || 0) + 2;
+        sendModeration(socket, "blocked", moderation.reason);
+        if ((socket.__safetyScore || 0) >= 6 && socket.__lobbyType !== "suspect") {
+          const baseRoom = socket.__baseRoom || "academy-hall";
+          moveSocketToLobby(socket, username, baseRoom, "suspect", "Repeated safety violations triggered suspect routing.");
+        }
+        return;
+      }
+      registerSocketChat(socket, rawText.length);
       const chatMsg = {
         username,
-        text: String(message.text || "").slice(0, 180),
+        text: rawText.slice(0, 180),
         ts: Date.now(),
       };
       room.chat.push(chatMsg);
