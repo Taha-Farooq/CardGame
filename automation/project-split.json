@@ -1,0 +1,26 @@
+{
+  "splitVersion": 1,
+  "products": [
+    {
+      "id": "youth",
+      "name": "Arcane Star Academy",
+      "path": "products/star-academy-youth",
+      "audience": "all-ages",
+      "contentPolicy": "family-safe"
+    },
+    {
+      "id": "mature-safe",
+      "name": "Astral Rift Rivals",
+      "path": "products/astral-rivals-mature-safe",
+      "audience": "18plus",
+      "contentPolicy": "mature-non-explicit"
+    }
+  ],
+  "sharedCore": {
+    "path": "core/card-core.js",
+    "syncTargets": [
+      "products/star-academy-youth/shared/card-core.js",
+      "products/astral-rivals-mature-safe/shared/card-core.js"
+    ]
+  }
+}

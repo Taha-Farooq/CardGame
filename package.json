@@ -5,6 +5,7 @@
   "description": "Browser card battler prototype with online room support",
   "scripts": {
     "start": "node server.js",
-    "bots:cycle": "node scripts/bot-council-cycle.js"
+    "bots:cycle": "node scripts/bot-council-cycle.js",
+    "split:sync-core": "node scripts/sync-core-to-products.js"
   }
 }

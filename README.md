@@ -79,6 +79,20 @@ GitHub Actions:
 
 - `.github/workflows/bot-cycle.yml` runs daily and on manual dispatch.
 
+## Multi-Product Split Workflow
+
+To reuse one workflow across separate games without mixing brand/content:
+
+- Shared core logic lives in `core/card-core.js`.
+- Product manifests live in `automation/project-split.json`.
+- Product docs live under `products/`.
+- Sync command: `node scripts/sync-core-to-products.js` (or `npm run split:sync-core` when npm is available).
+
+Current product profiles:
+
+- `products/star-academy-youth/` (all-ages)
+- `products/astral-rivals-mature-safe/` (18+, non-explicit)
+
 ## Expansion Hooks
 
 - Add more worlds to `worlds` in `script.js`.
