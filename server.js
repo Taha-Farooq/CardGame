@@ -242,6 +242,7 @@ function sendAuthState(socket, ok, reason = "") {
         type: "moderatorAuthState",
         ok,
         reason,
+        moderatorName: socket.__moderatorName || "",
         ts: Date.now(),
       })
     )
@@ -561,22 +562,33 @@ server.on("upgrade", (req, socket) => {
         targetUsername,
         incidentId,
         lastKnownIncident: targetSocket.__lastIncidentId || "",
+        moderatorName: socket.__moderatorName || "unknown-moderator",
       });
       sendModerationDashboard(socket);
     }
 
     if (message.type === "moderatorAuth") {
       const token = String(message.token || "");
+      const moderatorName = String(message.moderatorName || "").trim().slice(0, 32);
       if (!MODERATOR_SECRET) {
         socket.__isModerator = false;
+        socket.__moderatorName = "";
         sendAuthState(socket, false, "Server MODERATOR_SECRET is not configured.");
+        return;
+      }
+      if (!moderatorName) {
+        socket.__isModerator = false;
+        socket.__moderatorName = "";
+        sendAuthState(socket, false, "Moderator name is required.");
         return;
       }
       if (token && token === MODERATOR_SECRET) {
         socket.__isModerator = true;
+        socket.__moderatorName = moderatorName;
         sendAuthState(socket, true, "Moderator session authenticated.");
       } else {
         socket.__isModerator = false;
+        socket.__moderatorName = "";
         sendAuthState(socket, false, "Invalid moderator token.");
       }
     }

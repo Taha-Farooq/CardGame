@@ -67,6 +67,7 @@ Notes:
 - Server-side temporary auto-mute escalation for repeated spam/moderation violations.
 - Incident/action traceability with IDs and moderator action history (unmute/escalate).
 - Moderator auth gate for dashboard/actions via server `MODERATOR_SECRET`.
+- Per-moderator audit identity: moderator name required at login and recorded on actions.
 - Original anime space-fantasy tone inspired by cosmic rail-journey RPG vibes (without using third-party IP assets or names).
 
 ## Bot Council Automation

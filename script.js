@@ -214,6 +214,7 @@ let online = {
   moderationActions: [],
   isModerator: false,
   moderatorAuthReason: "",
+  moderatorName: "",
 };
 
 function applySafetyPreset() {
@@ -402,6 +403,7 @@ function connectOnline() {
     } else if (data.type === "moderatorAuthState") {
       online.isModerator = !!data.ok;
       online.moderatorAuthReason = data.reason || "";
+      online.moderatorName = data.moderatorName || "";
       pushOnlineLog(`[Moderation] Auth ${online.isModerator ? "granted" : "denied"}: ${online.moderatorAuthReason || "No details"}`);
     } else if (data.type === "statePing") {
       if (data.from === "__server__" && typeof data.ts === "number") {
@@ -435,12 +437,18 @@ function authenticateModerator() {
     return;
   }
   const tokenInput = document.getElementById("moderatorTokenInput");
+  const moderatorNameInput = document.getElementById("moderatorNameInput");
+  const moderatorName = (moderatorNameInput?.value || "").trim().slice(0, 32);
   const token = (tokenInput?.value || "").trim();
+  if (!moderatorName) {
+    pushOnlineLog("[Moderation] Enter a moderator name.");
+    return;
+  }
   if (!token) {
     pushOnlineLog("[Moderation] Enter a moderator token.");
     return;
   }
-  sendOnline({ type: "moderatorAuth", token });
+  sendOnline({ type: "moderatorAuth", token, moderatorName });
 }
 
 function runModerationAction(action) {
@@ -2001,13 +2009,13 @@ function render() {
   if (moderationActionLog) {
     moderationActionLog.textContent = (online.moderationActions || []).map((event) => {
       const t = new Date(event.ts).toLocaleTimeString();
-      return `[${t}] ${event.id || "act-?"} | ${event.action} | target=${event.targetUsername || "unknown"} | incident=${event.incidentId || "n/a"}`;
+      return `[${t}] ${event.id || "act-?"} | ${event.action} | by=${event.moderatorName || "unknown-moderator"} | target=${event.targetUsername || "unknown"} | incident=${event.incidentId || "n/a"}`;
     }).join("\n") || "No moderator actions yet.";
   }
   const authStatus = document.getElementById("moderatorAuthStatus");
   if (authStatus) {
     authStatus.textContent = online.isModerator
-      ? `Moderator auth: authenticated (${online.moderatorAuthReason || "ok"})`
+      ? `Moderator auth: authenticated as ${online.moderatorName || "unknown"} (${online.moderatorAuthReason || "ok"})`
       : `Moderator auth: not authenticated${online.moderatorAuthReason ? ` (${online.moderatorAuthReason})` : ""}`;
   }
   const refreshModerationBtn = document.getElementById("refreshModerationBtn");
