@@ -79,12 +79,12 @@ const worldEvents = [
 ];
 
 const companionCatalog = [
-  { id: "luna", name: "Luna Vesper", rarity: "Epic", vibe: "Moonblade Muse", hpBonus: 12, burstStart: 10, goldBonusPct: 8, blurb: "A calm moon duelist with silver fan blades.", skillType: "teamShield", skillValue: 15 },
-  { id: "aiko", name: "Aiko Emberheart", rarity: "Rare", vibe: "Blaze Idol", hpBonus: 8, burstStart: 8, goldBonusPct: 6, blurb: "Performs blazing charm spells that hype the team.", skillType: "burstCharge", skillValue: 22 },
-  { id: "mira", name: "Mira Tidecall", rarity: "Rare", vibe: "Ocean Songstress", hpBonus: 10, burstStart: 6, goldBonusPct: 5, blurb: "Her tide melodies shield friends in battle.", skillType: "teamHeal", skillValue: 16 },
-  { id: "nyx", name: "Nyx Starweaver", rarity: "Legendary", vibe: "Celestial Oracle", hpBonus: 18, burstStart: 15, goldBonusPct: 12, blurb: "A cosmic prodigy who reads fate from starlight.", skillType: "trueDamage", skillValue: 26 },
-  { id: "kiko", name: "Kiko Sprouttail", rarity: "Common", vibe: "Forest Familiar", hpBonus: 5, burstStart: 4, goldBonusPct: 3, blurb: "Small, cheerful, and always scouting rare drops.", skillType: "energyBoost", skillValue: 1 },
-  { id: "sera", name: "Sera Prismveil", rarity: "Epic", vibe: "Prism Shrine Keeper", hpBonus: 14, burstStart: 12, goldBonusPct: 9, blurb: "Channels rainbow sigils that empower every spell.", skillType: "doubleStrike", skillValue: 12 },
+  { id: "luna", name: "Luna Vesper", rarity: "Epic", vibe: "Moonblade Muse", hpBonus: 12, burstStart: 10, goldBonusPct: 8, blurb: "A calm moon duelist with silver fan blades.", glamNote: "Elegant evening-festival style with silver accents.", skillType: "teamShield", skillValue: 15 },
+  { id: "aiko", name: "Aiko Emberheart", rarity: "Rare", vibe: "Blaze Idol", hpBonus: 8, burstStart: 8, goldBonusPct: 6, blurb: "Performs blazing charm spells that hype the team.", glamNote: "Idol-inspired stage fashion and bold color palette.", skillType: "burstCharge", skillValue: 22 },
+  { id: "mira", name: "Mira Tidecall", rarity: "Rare", vibe: "Ocean Songstress", hpBonus: 10, burstStart: 6, goldBonusPct: 5, blurb: "Her tide melodies shield friends in battle.", glamNote: "Flowing ocean-themed gown and pearl motifs.", skillType: "teamHeal", skillValue: 16 },
+  { id: "nyx", name: "Nyx Starweaver", rarity: "Legendary", vibe: "Celestial Oracle", hpBonus: 18, burstStart: 15, goldBonusPct: 12, blurb: "A cosmic prodigy who reads fate from starlight.", glamNote: "Premium gala robe style with celestial ornaments.", skillType: "trueDamage", skillValue: 26 },
+  { id: "kiko", name: "Kiko Sprouttail", rarity: "Common", vibe: "Forest Familiar", hpBonus: 5, burstStart: 4, goldBonusPct: 3, blurb: "Small, cheerful, and always scouting rare drops.", glamNote: "Nature streetwear look with playful leaf charm.", skillType: "energyBoost", skillValue: 1 },
+  { id: "sera", name: "Sera Prismveil", rarity: "Epic", vibe: "Prism Shrine Keeper", hpBonus: 14, burstStart: 12, goldBonusPct: 9, blurb: "Channels rainbow sigils that empower every spell.", glamNote: "Runway-inspired prism couture with shrine motifs.", skillType: "doubleStrike", skillValue: 12 },
 ];
 
 const companionArt = {
@@ -125,6 +125,7 @@ const initialState = {
     storyIndex: 0,
     weeklyCrownSpendCap: 300,
     requirePurchaseConfirm: true,
+    familySafeStyle: true,
   },
   activeWorldId: null,
   player: { hp: 100, maxHp: 100, energy: 1, shield: 0, burst: 0 },
@@ -1390,6 +1391,7 @@ function renderCompanions() {
       <p>Rarity: ${meta.rarity}</p>
       <p>Vibe: ${meta.vibe}</p>
       <p>${meta.blurb}</p>
+      <p>${state.profile.familySafeStyle ? "Style: All-ages presentation enabled." : `Style: ${meta.glamNote}`}</p>
       <p>Copies: ${owned.copies}</p>
       <p>Affinity: ${owned.affinity}</p>
       <p>Bonus: +${meta.hpBonus} HP, +${meta.burstStart} burst, +${meta.goldBonusPct}% gold</p>
@@ -1570,6 +1572,14 @@ function render() {
     ? `Active Pet: ${activePet.name} (Lv ${activePetData?.level || 1})`
     : "Active Pet: None";
   document.getElementById("miniGameStatus").textContent = `Mini-games today: ${state.miniGamePlaysToday}/6`;
+  const styleToggle = document.getElementById("familyStyleToggle");
+  if (styleToggle) styleToggle.checked = !!state.profile.familySafeStyle;
+  const styleStatus = document.getElementById("styleModeStatus");
+  if (styleStatus) {
+    styleStatus.textContent = state.profile.familySafeStyle
+      ? "Style Mode: Family-safe (all-ages)"
+      : "Style Mode: Teen fantasy glamour (still rating-safe)";
+  }
   const modeBadge = document.getElementById("serverModeBadge");
   if (modeBadge) {
     modeBadge.classList.remove("mode-live", "mode-pages", "mode-offline");
@@ -1620,6 +1630,11 @@ document.getElementById("saveCapBtn").onclick = () => {
 };
 document.getElementById("confirmPurchasesToggle").onchange = (event) => {
   state.profile.requirePurchaseConfirm = !!event.target.checked;
+  persist();
+  render();
+};
+document.getElementById("familyStyleToggle").onchange = (event) => {
+  state.profile.familySafeStyle = !!event.target.checked;
   persist();
   render();
 };

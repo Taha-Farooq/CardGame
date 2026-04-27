@@ -52,6 +52,7 @@ Notes:
 - Browser server with Online Plaza room join/chat/state sharing via WebSocket.
 - Companion art gallery slots (`assets/waifus/`) with portrait rendering hooks.
 - Shiny foil card variants and animated battle hit/attack effects.
+- Rating-safe style controls: family-safe mode and teen fantasy glamour presentation.
 
 ## Expansion Hooks
 
