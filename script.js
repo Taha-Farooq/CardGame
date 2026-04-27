@@ -208,6 +208,8 @@ let online = {
   lastLatencyMs: null,
   lobbyType: "youth",
   lobbyReason: "",
+  moderationSummary: null,
+  moderationEvents: [],
 };
 
 function applySafetyPreset() {
@@ -386,6 +388,9 @@ function connectOnline() {
       } else {
         recordModerationIncident(data.action || "blocked", data.reason || "Server moderation event", "");
       }
+    } else if (data.type === "moderationDashboard") {
+      online.moderationSummary = data.summary || null;
+      online.moderationEvents = data.events || [];
     } else if (data.type === "statePing") {
       if (data.from === "__server__" && typeof data.ts === "number") {
         online.lastLatencyMs = Date.now() - data.ts;
@@ -404,6 +409,11 @@ function sendOnline(payload) {
   if (online.ws && online.ws.readyState === 1) {
     online.ws.send(JSON.stringify(payload));
   }
+}
+
+function requestModerationDashboard() {
+  if (online.mode !== "websocket" || !online.connected) return;
+  sendOnline({ type: "moderationDashboardRequest" });
 }
 
 function joinOnlineRoom() {
@@ -1912,6 +1922,22 @@ function render() {
       modeBadge.classList.add("mode-live");
     }
   }
+  const moderationSummary = document.getElementById("moderationSummary");
+  if (moderationSummary) {
+    if (!online.moderationSummary) {
+      moderationSummary.textContent = "No moderation data yet.";
+    } else {
+      const counts = online.moderationSummary.lobbyCounts || {};
+      moderationSummary.textContent = `Rooms: ${online.moderationSummary.rooms} | Youth: ${counts.youth || 0} | Suspect: ${counts.suspect || 0} | Adult: ${counts.adult || 0} | Events: ${online.moderationSummary.eventCount || 0}`;
+    }
+  }
+  const moderationLog = document.getElementById("moderationLog");
+  if (moderationLog) {
+    moderationLog.textContent = (online.moderationEvents || []).map((event) => {
+      const t = new Date(event.ts).toLocaleTimeString();
+      return `[${t}] ${event.eventType} | ${event.username || "unknown"} | ${event.lobbyType || "unknown"} | ${event.reason || "n/a"} | score=${event.safetyScore ?? 0}`;
+    }).join("\n") || "No moderation events received yet.";
+  }
   renderWorlds();
   renderHand();
   renderProgress();
@@ -1977,7 +2003,11 @@ document.getElementById("joinRoomBtn").onclick = () => joinOnlineRoom();
 document.getElementById("chatSendBtn").onclick = () => sendChat();
 document.getElementById("pingStatusBtn").onclick = () => pingStatus();
 document.getElementById("exportIncidentsBtn").onclick = () => exportIncidentLog();
+document.getElementById("refreshModerationBtn").onclick = () => requestModerationDashboard();
 
 connectOnline();
+setInterval(() => {
+  requestModerationDashboard();
+}, 12000);
 
 render();

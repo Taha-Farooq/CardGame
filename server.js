@@ -16,6 +16,7 @@ const MIME = {
 };
 
 const rooms = new Map();
+const moderationEvents = [];
 const SERVER_CHAT_LIMITS = {
   cooldownMs: 1800,
   windowMs: 15000,
@@ -226,6 +227,41 @@ function sendModeration(socket, action, reason) {
   socket.write(encodeWsFrame(JSON.stringify(msg)));
 }
 
+function pushModerationEvent(event) {
+  moderationEvents.unshift({
+    ts: Date.now(),
+    ...event,
+  });
+  while (moderationEvents.length > 120) moderationEvents.pop();
+}
+
+function getLobbyCounts() {
+  const counts = { youth: 0, suspect: 0, adult: 0, unknown: 0 };
+  rooms.forEach((room) => {
+    room.clients.forEach((client) => {
+      const lobby = client.__lobbyType || "unknown";
+      counts[lobby] = (counts[lobby] || 0) + 1;
+    });
+  });
+  return counts;
+}
+
+function sendModerationDashboard(socket) {
+  socket.write(
+    encodeWsFrame(
+      JSON.stringify({
+        type: "moderationDashboard",
+        summary: {
+          rooms: rooms.size,
+          lobbyCounts: getLobbyCounts(),
+          eventCount: moderationEvents.length,
+        },
+        events: moderationEvents.slice(0, 50),
+      })
+    )
+  );
+}
+
 function moveSocketToLobby(socket, username, baseRoom, lobbyType, reason = "") {
   removeFromRooms(socket);
   const roomId = `${lobbyType}-${baseRoom}`.slice(0, 30);
@@ -237,6 +273,14 @@ function moveSocketToLobby(socket, username, baseRoom, lobbyType, reason = "") {
   socket.__lobbyType = lobbyType;
   socket.write(encodeWsFrame(JSON.stringify({ type: "chatHistory", chat: room.chat })));
   socket.write(encodeWsFrame(JSON.stringify({ type: "roomAssignment", roomId, lobbyType, reason })));
+  pushModerationEvent({
+    eventType: "room_assignment",
+    username,
+    roomId,
+    lobbyType,
+    reason,
+    safetyScore: socket.__safetyScore || 0,
+  });
   broadcastRoom(roomId, { type: "presence", users: [...room.users.values()] });
 }
 
@@ -312,18 +356,42 @@ server.on("upgrade", (req, socket) => {
       if (bombReason) {
         socket.__safetyScore = (socket.__safetyScore || 0) + 2;
         sendModeration(socket, "blocked", bombReason);
+        pushModerationEvent({
+          eventType: "chat_blocked",
+          username,
+          roomId,
+          lobbyType: socket.__lobbyType || "unknown",
+          reason: bombReason,
+          safetyScore: socket.__safetyScore || 0,
+        });
         return;
       }
       const rate = evaluateSocketRate(socket, rawText.length);
       if (!rate.allow) {
         socket.__safetyScore = (socket.__safetyScore || 0) + 1;
         sendModeration(socket, "rate_limited", rate.reason);
+        pushModerationEvent({
+          eventType: "rate_limited",
+          username,
+          roomId,
+          lobbyType: socket.__lobbyType || "unknown",
+          reason: rate.reason,
+          safetyScore: socket.__safetyScore || 0,
+        });
         return;
       }
       const moderation = evaluateChatContent(rawText);
       if (moderation.action === "ban") {
         socket.__safetyScore = 999;
         sendModeration(socket, "ban", moderation.reason);
+        pushModerationEvent({
+          eventType: "auto_ban",
+          username,
+          roomId,
+          lobbyType: socket.__lobbyType || "unknown",
+          reason: moderation.reason,
+          safetyScore: socket.__safetyScore || 0,
+        });
         const baseRoom = socket.__baseRoom || "academy-hall";
         moveSocketToLobby(socket, username, baseRoom, "suspect", "Safety incident routed this user to suspect lobby.");
         return;
@@ -331,6 +399,14 @@ server.on("upgrade", (req, socket) => {
       if (moderation.action === "block") {
         socket.__safetyScore = (socket.__safetyScore || 0) + 2;
         sendModeration(socket, "blocked", moderation.reason);
+        pushModerationEvent({
+          eventType: "chat_blocked",
+          username,
+          roomId,
+          lobbyType: socket.__lobbyType || "unknown",
+          reason: moderation.reason,
+          safetyScore: socket.__safetyScore || 0,
+        });
         if ((socket.__safetyScore || 0) >= 6 && socket.__lobbyType !== "suspect") {
           const baseRoom = socket.__baseRoom || "academy-hall";
           moveSocketToLobby(socket, username, baseRoom, "suspect", "Repeated safety violations triggered suspect routing.");
@@ -366,6 +442,10 @@ server.on("upgrade", (req, socket) => {
           })
         )
       );
+    }
+
+    if (message.type === "moderationDashboardRequest") {
+      sendModerationDashboard(socket);
     }
   });
 

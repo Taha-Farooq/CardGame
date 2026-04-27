@@ -204,6 +204,10 @@ progress {
   border: 1px solid #343477;
 }
 
+#moderationLog {
+  max-height: 260px;
+}
+
 .shop-grid, .inventory-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
