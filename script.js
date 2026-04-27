@@ -211,6 +211,7 @@ let online = {
   moderationSummary: null,
   moderationEvents: [],
   mutedUntil: 0,
+  moderationActions: [],
 };
 
 function applySafetyPreset() {
@@ -395,6 +396,7 @@ function connectOnline() {
     } else if (data.type === "moderationDashboard") {
       online.moderationSummary = data.summary || null;
       online.moderationEvents = data.events || [];
+      online.moderationActions = data.actions || [];
     } else if (data.type === "statePing") {
       if (data.from === "__server__" && typeof data.ts === "number") {
         online.lastLatencyMs = Date.now() - data.ts;
@@ -418,6 +420,20 @@ function sendOnline(payload) {
 function requestModerationDashboard() {
   if (online.mode !== "websocket" || !online.connected) return;
   sendOnline({ type: "moderationDashboardRequest" });
+}
+
+function runModerationAction(action) {
+  if (online.mode !== "websocket" || !online.connected) return;
+  const usernameInput = document.getElementById("moderationTargetInput");
+  const incidentInput = document.getElementById("moderationIncidentInput");
+  const targetUsername = (usernameInput?.value || "").trim().slice(0, 20);
+  const incidentId = (incidentInput?.value || "").trim().slice(0, 80);
+  if (!targetUsername) {
+    pushOnlineLog("[Moderation] Enter a target username first.");
+    render();
+    return;
+  }
+  sendOnline({ type: "moderationAction", action, targetUsername, incidentId });
 }
 
 function joinOnlineRoom() {
@@ -1953,8 +1969,15 @@ function render() {
   if (moderationLog) {
     moderationLog.textContent = (online.moderationEvents || []).map((event) => {
       const t = new Date(event.ts).toLocaleTimeString();
-      return `[${t}] ${event.eventType} | ${event.username || "unknown"} | ${event.lobbyType || "unknown"} | ${event.reason || "n/a"} | score=${event.safetyScore ?? 0}`;
+      return `[${t}] ${event.id || "inc-?"} | ${event.eventType} | ${event.username || "unknown"} | ${event.lobbyType || "unknown"} | ${event.reason || "n/a"} | score=${event.safetyScore ?? 0}`;
     }).join("\n") || "No moderation events received yet.";
+  }
+  const moderationActionLog = document.getElementById("moderationActionLog");
+  if (moderationActionLog) {
+    moderationActionLog.textContent = (online.moderationActions || []).map((event) => {
+      const t = new Date(event.ts).toLocaleTimeString();
+      return `[${t}] ${event.id || "act-?"} | ${event.action} | target=${event.targetUsername || "unknown"} | incident=${event.incidentId || "n/a"}`;
+    }).join("\n") || "No moderator actions yet.";
   }
   renderWorlds();
   renderHand();
@@ -2022,6 +2045,8 @@ document.getElementById("chatSendBtn").onclick = () => sendChat();
 document.getElementById("pingStatusBtn").onclick = () => pingStatus();
 document.getElementById("exportIncidentsBtn").onclick = () => exportIncidentLog();
 document.getElementById("refreshModerationBtn").onclick = () => requestModerationDashboard();
+document.getElementById("modUnmuteBtn").onclick = () => runModerationAction("unmute");
+document.getElementById("modEscalateBtn").onclick = () => runModerationAction("escalate_suspect");
 
 connectOnline();
 setInterval(() => {

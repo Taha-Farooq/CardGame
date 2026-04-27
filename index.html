@@ -76,8 +76,16 @@
     <div class="actions">
       <button id="refreshModerationBtn">Refresh Moderation Feed</button>
     </div>
+    <div class="actions">
+      <input id="moderationTargetInput" type="text" placeholder="Target username" />
+      <input id="moderationIncidentInput" type="text" placeholder="Incident ID (optional)" />
+      <button id="modUnmuteBtn">Unmute User</button>
+      <button id="modEscalateBtn">Escalate to Suspect</button>
+    </div>
     <p id="moderationSummary">No moderation data yet.</p>
     <pre id="moderationLog" class="log"></pre>
+    <h3>Moderator Actions</h3>
+    <pre id="moderationActionLog" class="log"></pre>
   </section>
 
   <main class="layout">

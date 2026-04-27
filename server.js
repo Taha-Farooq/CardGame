@@ -17,6 +17,8 @@ const MIME = {
 
 const rooms = new Map();
 const moderationEvents = [];
+const moderationActions = [];
+let moderationEventSeq = 0;
 const SERVER_CHAT_LIMITS = {
   cooldownMs: 1800,
   windowMs: 15000,
@@ -237,7 +239,7 @@ function applyTemporaryMute(socket, reason, durationMs, username, roomId) {
   const current = socket.__mutedUntil || 0;
   socket.__mutedUntil = Math.max(current, now + durationMs);
   sendModeration(socket, "muted", reason);
-  pushModerationEvent({
+  const event = pushModerationEvent({
     eventType: "temp_mute",
     username,
     roomId,
@@ -246,14 +248,27 @@ function applyTemporaryMute(socket, reason, durationMs, username, roomId) {
     safetyScore: socket.__safetyScore || 0,
     mutedUntil: socket.__mutedUntil,
   });
+  socket.__lastIncidentId = event.id;
 }
 
 function pushModerationEvent(event) {
-  moderationEvents.unshift({
+  const entry = {
+    id: `inc-${Date.now()}-${++moderationEventSeq}`,
     ts: Date.now(),
     ...event,
-  });
+  };
+  moderationEvents.unshift(entry);
   while (moderationEvents.length > 120) moderationEvents.pop();
+  return entry;
+}
+
+function pushModerationAction(action) {
+  moderationActions.unshift({
+    id: `act-${Date.now()}-${++moderationEventSeq}`,
+    ts: Date.now(),
+    ...action,
+  });
+  while (moderationActions.length > 120) moderationActions.pop();
 }
 
 function getLobbyCounts() {
@@ -276,11 +291,25 @@ function sendModerationDashboard(socket) {
           rooms: rooms.size,
           lobbyCounts: getLobbyCounts(),
           eventCount: moderationEvents.length,
+          actionCount: moderationActions.length,
         },
         events: moderationEvents.slice(0, 50),
+        actions: moderationActions.slice(0, 50),
       })
     )
   );
+}
+
+function findSocketByUsername(username) {
+  const target = String(username || "").trim();
+  if (!target) return null;
+  for (const room of rooms.values()) {
+    for (const client of room.clients) {
+      const name = room.users.get(client);
+      if (name === target) return { socket: client, room };
+    }
+  }
+  return null;
 }
 
 function moveSocketToLobby(socket, username, baseRoom, lobbyType, reason = "") {
@@ -294,7 +323,7 @@ function moveSocketToLobby(socket, username, baseRoom, lobbyType, reason = "") {
   socket.__lobbyType = lobbyType;
   socket.write(encodeWsFrame(JSON.stringify({ type: "chatHistory", chat: room.chat })));
   socket.write(encodeWsFrame(JSON.stringify({ type: "roomAssignment", roomId, lobbyType, reason })));
-  pushModerationEvent({
+  const event = pushModerationEvent({
     eventType: "room_assignment",
     username,
     roomId,
@@ -302,6 +331,7 @@ function moveSocketToLobby(socket, username, baseRoom, lobbyType, reason = "") {
     reason,
     safetyScore: socket.__safetyScore || 0,
   });
+  socket.__lastIncidentId = event.id;
   broadcastRoom(roomId, { type: "presence", users: [...room.users.values()] });
 }
 
@@ -381,7 +411,7 @@ server.on("upgrade", (req, socket) => {
       if (bombReason) {
         socket.__safetyScore = (socket.__safetyScore || 0) + 2;
         sendModeration(socket, "blocked", bombReason);
-        pushModerationEvent({
+        const event = pushModerationEvent({
           eventType: "chat_blocked",
           username,
           roomId,
@@ -389,6 +419,7 @@ server.on("upgrade", (req, socket) => {
           reason: bombReason,
           safetyScore: socket.__safetyScore || 0,
         });
+        socket.__lastIncidentId = event.id;
         if ((socket.__safetyScore || 0) >= 5) {
           applyTemporaryMute(socket, "Repeated spam patterns triggered auto-mute.", SERVER_CHAT_LIMITS.softMuteMs, username, roomId);
         }
@@ -398,7 +429,7 @@ server.on("upgrade", (req, socket) => {
       if (!rate.allow) {
         socket.__safetyScore = (socket.__safetyScore || 0) + 1;
         sendModeration(socket, "rate_limited", rate.reason);
-        pushModerationEvent({
+        const event = pushModerationEvent({
           eventType: "rate_limited",
           username,
           roomId,
@@ -406,6 +437,7 @@ server.on("upgrade", (req, socket) => {
           reason: rate.reason,
           safetyScore: socket.__safetyScore || 0,
         });
+        socket.__lastIncidentId = event.id;
         if ((socket.__safetyScore || 0) >= 5) {
           applyTemporaryMute(socket, "Rate-limit abuse triggered temporary mute.", SERVER_CHAT_LIMITS.softMuteMs, username, roomId);
         }
@@ -415,7 +447,7 @@ server.on("upgrade", (req, socket) => {
       if (moderation.action === "ban") {
         socket.__safetyScore = 999;
         sendModeration(socket, "ban", moderation.reason);
-        pushModerationEvent({
+        const event = pushModerationEvent({
           eventType: "auto_ban",
           username,
           roomId,
@@ -423,6 +455,7 @@ server.on("upgrade", (req, socket) => {
           reason: moderation.reason,
           safetyScore: socket.__safetyScore || 0,
         });
+        socket.__lastIncidentId = event.id;
         const baseRoom = socket.__baseRoom || "academy-hall";
         moveSocketToLobby(socket, username, baseRoom, "suspect", "Safety incident routed this user to suspect lobby.");
         return;
@@ -430,7 +463,7 @@ server.on("upgrade", (req, socket) => {
       if (moderation.action === "block") {
         socket.__safetyScore = (socket.__safetyScore || 0) + 2;
         sendModeration(socket, "blocked", moderation.reason);
-        pushModerationEvent({
+        const event = pushModerationEvent({
           eventType: "chat_blocked",
           username,
           roomId,
@@ -438,6 +471,7 @@ server.on("upgrade", (req, socket) => {
           reason: moderation.reason,
           safetyScore: socket.__safetyScore || 0,
         });
+        socket.__lastIncidentId = event.id;
         if ((socket.__safetyScore || 0) >= 6 && socket.__lobbyType !== "suspect") {
           const baseRoom = socket.__baseRoom || "academy-hall";
           moveSocketToLobby(socket, username, baseRoom, "suspect", "Repeated safety violations triggered suspect routing.");
@@ -479,6 +513,33 @@ server.on("upgrade", (req, socket) => {
     }
 
     if (message.type === "moderationDashboardRequest") {
+      sendModerationDashboard(socket);
+    }
+
+    if (message.type === "moderationAction") {
+      const action = String(message.action || "").trim();
+      const targetUsername = String(message.targetUsername || "").trim().slice(0, 20);
+      const incidentId = String(message.incidentId || "").trim().slice(0, 80);
+      if (!action || !targetUsername) return;
+      const found = findSocketByUsername(targetUsername);
+      if (!found) return;
+      const targetSocket = found.socket;
+      if (action === "unmute") {
+        targetSocket.__mutedUntil = 0;
+        sendModeration(targetSocket, "unmuted", "Moderator removed temporary mute.");
+      } else if (action === "escalate_suspect") {
+        const baseRoom = targetSocket.__baseRoom || "academy-hall";
+        const currentName = (found.room.users.get(targetSocket) || targetUsername).slice(0, 20);
+        moveSocketToLobby(targetSocket, currentName, baseRoom, "suspect", "Moderator escalated user to suspect lobby.");
+      } else {
+        return;
+      }
+      pushModerationAction({
+        action,
+        targetUsername,
+        incidentId,
+        lastKnownIncident: targetSocket.__lastIncidentId || "",
+      });
       sendModerationDashboard(socket);
     }
   });
