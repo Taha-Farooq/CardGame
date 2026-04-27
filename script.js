@@ -153,6 +153,8 @@ let online = {
   chat: [],
   mode: "offline",
   username: "Mage",
+  lastPingSentAt: 0,
+  lastLatencyMs: null,
 };
 
 function loadState() {
@@ -263,6 +265,9 @@ function connectOnline() {
     } else if (data.type === "chat" && data.message) {
       pushOnlineLog(`[${new Date(data.message.ts).toLocaleTimeString()}] ${data.message.username}: ${data.message.text}`);
     } else if (data.type === "statePing") {
+      if (data.from === "__server__" && typeof data.ts === "number") {
+        online.lastLatencyMs = Date.now() - data.ts;
+      }
       pushOnlineLog(`[Status] ${data.from}: ${data.status}`);
     }
     renderOnline();
@@ -323,18 +328,27 @@ function pingStatus() {
     sendOnline({ type: "statePing", roomId: online.roomId, username: online.username, status });
     pushOnlineLog(`[Status] ${online.username}: ${status}`);
   } else {
+    online.lastPingSentAt = Date.now();
     sendOnline({ type: "statePing", status });
   }
 }
 
 function renderOnline() {
   const status = document.getElementById("onlineStatus");
+  const health = document.getElementById("onlineHealth");
   const presence = document.getElementById("roomPresence");
   const chat = document.getElementById("onlineChatLog");
-  if (!status || !presence || !chat) return;
+  if (!status || !presence || !chat || !health) return;
   status.textContent = online.connected
     ? `Connected (${online.mode})${online.roomId ? ` | Room: ${online.roomId}` : ""}`
     : "Not connected";
+  if (online.connected && online.mode === "websocket") {
+    health.textContent = online.lastLatencyMs == null ? "Health: connected" : `Health: ${online.lastLatencyMs} ms`;
+  } else if (online.connected && online.mode === "broadcast") {
+    health.textContent = "Health: local-tab sync";
+  } else {
+    health.textContent = "Health: unavailable";
+  }
   presence.textContent = `Players: ${online.users.length ? online.users.join(", ") : "none"}`;
   chat.textContent = online.chat.join("\n");
 }
@@ -1508,6 +1522,20 @@ function render() {
     ? `Active Pet: ${activePet.name} (Lv ${activePetData?.level || 1})`
     : "Active Pet: None";
   document.getElementById("miniGameStatus").textContent = `Mini-games today: ${state.miniGamePlaysToday}/6`;
+  const modeBadge = document.getElementById("serverModeBadge");
+  if (modeBadge) {
+    modeBadge.classList.remove("mode-live", "mode-pages", "mode-offline");
+    if (!online.connected) {
+      modeBadge.textContent = "Offline";
+      modeBadge.classList.add("mode-offline");
+    } else if (online.mode === "broadcast") {
+      modeBadge.textContent = "Pages Local";
+      modeBadge.classList.add("mode-pages");
+    } else {
+      modeBadge.textContent = "Live WebSocket";
+      modeBadge.classList.add("mode-live");
+    }
+  }
   renderWorlds();
   renderHand();
   renderProgress();

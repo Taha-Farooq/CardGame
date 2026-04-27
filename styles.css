@@ -27,6 +27,25 @@ h1, h2, h3 {
   gap: 1rem;
 }
 
+#serverModeBadge {
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  background: #464b7f;
+}
+
+#serverModeBadge.mode-live {
+  background: #2f8f5a;
+}
+
+#serverModeBadge.mode-pages {
+  background: #8f7a2f;
+}
+
+#serverModeBadge.mode-offline {
+  background: #8f3b3b;
+}
+
 .layout {
   display: grid;
   grid-template-columns: 280px 1fr 300px;

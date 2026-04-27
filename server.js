@@ -188,6 +188,16 @@ server.on("upgrade", (req, socket) => {
       if (!room) return;
       const username = room.users.get(socket) || "Mage";
       broadcastRoom(roomId, { type: "statePing", from: username, status: String(message.status || "").slice(0, 80) });
+      socket.write(
+        encodeWsFrame(
+          JSON.stringify({
+            type: "statePing",
+            from: "__server__",
+            status: "pong",
+            ts: Date.now(),
+          })
+        )
+      );
     }
   });
 
