@@ -1,0 +1,9 @@
+{
+  "name": "arcane-star-academy",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser card battler prototype with online room support",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

@@ -4,11 +4,26 @@ Original anime-inspired browser card battler prototype with a multi-world struct
 
 ## Run
 
-No install required.
+Run as a browser game server (recommended):
 
-1. Open `index.html` in your browser.
-2. Pick a world and start battling.
-3. Win battles to earn gems and unlock new worlds.
+1. Run `npm start`.
+2. Open `http://localhost:3000`.
+3. Pick a world and start battling.
+
+Fallback: open `index.html` directly (offline mode, no online plaza).
+
+## GitHub Pages Hosting
+
+You can host this project on GitHub Pages because the core game is static.
+
+1. Push files to your repo.
+2. In GitHub repo settings, enable Pages from `main` branch root.
+3. Open your Pages URL.
+
+Notes:
+- Core game works fully on Pages.
+- Online Plaza runs in **GitHub Pages local mode** (tab-local sync via `BroadcastChannel`).
+- Full multi-user room server mode requires running `server.js` on your own host.
 
 ## Current Features
 
@@ -23,6 +38,18 @@ No install required.
 - Rotating daily shop stock with category filters.
 - World-linked quest board with crown and gold rewards.
 - Parent controls: weekly crown spend cap and purchase confirmation toggle.
+- Deck Lab to customize your active battle deck (4-12 cards).
+- Story-gated world progression that unlocks through chapter progress.
+- Rotating world events with bonus rewards per world.
+- Companion Sanctum with summonable anime-style guardian muses.
+- Active companion bonuses (HP, burst start, and bonus gold rewards).
+- Companion active skills (once-per-battle tactical actions).
+- Rate-up companion banner rotation with legendary pity counter.
+- Affinity-based companion bond story scenes.
+- Pet Pavilion with hatching, feeding, training, and active pet bonuses.
+- Arcade mini-games with daily play limits and reward loops.
+- Interactive mini-games: timing challenge, memory sequence, and lane-choice runner.
+- Browser server with Online Plaza room join/chat/state sharing via WebSocket.
 
 ## Expansion Hooks
 

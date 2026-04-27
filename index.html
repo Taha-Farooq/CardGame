@@ -11,6 +11,7 @@
     <h1>Arcane Star Academy</h1>
     <div class="profile">
       <span id="playerName">Mage</span>
+      <span>Companion: <strong id="activeCompanionName">None</strong></span>
       <span>Gold: <strong id="goldCount">0</strong></span>
       <span>Gems: <strong id="gemCount">0</strong></span>
     </div>
@@ -25,6 +26,23 @@
       <a href="./TERMS.md" target="_blank" rel="noopener noreferrer">Terms</a>
       <a href="./PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
     </div>
+  </section>
+
+  <section class="panel economy">
+    <h2>Online Plaza</h2>
+    <div class="actions">
+      <input id="onlineNameInput" type="text" placeholder="Display name" />
+      <input id="roomIdInput" type="text" placeholder="Room ID" value="academy-hall" />
+      <button id="joinRoomBtn">Join Room</button>
+      <button id="pingStatusBtn">Share Status</button>
+    </div>
+    <p id="onlineStatus">Not connected</p>
+    <p id="roomPresence">Players: none</p>
+    <div class="actions">
+      <input id="chatInput" type="text" placeholder="Send room message" />
+      <button id="chatSendBtn">Send</button>
+    </div>
+    <pre id="onlineChatLog" class="log"></pre>
   </section>
 
   <main class="layout">
@@ -53,6 +71,7 @@
         <button id="drawBtn">Draw 3</button>
         <button id="endTurnBtn">End Turn</button>
         <button id="burstBtn">Burst Ult</button>
+        <button id="companionSkillBtn">Companion Skill</button>
       </div>
       <pre id="battleLog" class="log"></pre>
     </section>
@@ -98,6 +117,55 @@
         Require confirmation for every crown purchase
       </label>
     </div>
+  </section>
+
+  <section class="panel economy">
+    <h2>Deck Lab</h2>
+    <p>Battle Deck Size: <strong id="deckCount">0</strong></p>
+    <div id="deckBuilder" class="shop-grid"></div>
+  </section>
+
+  <section class="panel economy">
+    <h2>World Events</h2>
+    <div id="worldEventList" class="quest-grid"></div>
+  </section>
+
+  <section class="panel economy">
+    <h2>Companion Sanctum</h2>
+    <p>Summon anime-style guardian muses that boost your battle stats and rewards.</p>
+    <p id="bannerStatus"></p>
+    <p id="pityStatus"></p>
+    <div class="actions">
+      <button id="summonSingleBtn">Summon x1 (30 Gems)</button>
+      <button id="summonTenBtn">Summon x10 (270 Gems)</button>
+    </div>
+    <div id="companionRoster" class="quest-grid"></div>
+    <h3>Bond Story</h3>
+    <div id="bondSceneList" class="quest-grid"></div>
+  </section>
+
+  <section class="panel economy">
+    <h2>Pet Pavilion</h2>
+    <p>Raise magical pets for passive boosts and battle support.</p>
+    <div class="actions">
+      <button id="hatchPetBtn">Hatch Egg (40 Gems)</button>
+      <button id="feedPetBtn">Feed Active Pet (25 Gold)</button>
+      <button id="trainPetBtn">Train Active Pet (40 Gold)</button>
+    </div>
+    <p id="activePetStatus"></p>
+    <div id="petRoster" class="quest-grid"></div>
+  </section>
+
+  <section class="panel economy">
+    <h2>Arcade Mini-Games</h2>
+    <p>Quick side activities for extra rewards and pet growth.</p>
+    <div class="actions">
+      <button id="rhythmGameBtn">Rhythm Spark</button>
+      <button id="memoryGameBtn">Memory Sigils</button>
+      <button id="runnerGameBtn">Sky Runner</button>
+    </div>
+    <p id="miniGameStatus"></p>
+    <div id="miniGamePlayArea" class="mini-game"></div>
   </section>
 
   <script src="./script.js"></script>

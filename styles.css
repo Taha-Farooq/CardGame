@@ -183,6 +183,78 @@ progress {
   padding: 0.5rem;
 }
 
+.shop-item.active {
+  border-color: #8a66ff;
+  box-shadow: 0 0 0 1px #8a66ff inset;
+}
+
+.companion-card {
+  background: linear-gradient(140deg, #252244, #1a1933);
+  border: 1px solid #5b56a8;
+  border-radius: 10px;
+  padding: 0.6rem;
+}
+
+.companion-card.active {
+  border-color: #f8b74a;
+  box-shadow: 0 0 0 1px #f8b74a inset;
+}
+
+.bond-scene {
+  background: #171933;
+  border: 1px solid #4e56a6;
+  border-radius: 10px;
+  padding: 0.6rem;
+}
+
+.pet-card {
+  background: #1a2038;
+  border: 1px solid #5563b4;
+  border-radius: 10px;
+  padding: 0.6rem;
+}
+
+.pet-card.active {
+  border-color: #5edb91;
+  box-shadow: 0 0 0 1px #5edb91 inset;
+}
+
+.mini-game {
+  margin-top: 0.7rem;
+  background: #121425;
+  border: 1px solid #4b4f90;
+  border-radius: 10px;
+  padding: 0.7rem;
+}
+
+.mini-game-track {
+  height: 14px;
+  background: #242949;
+  border-radius: 8px;
+  position: relative;
+  margin: 0.6rem 0;
+}
+
+.mini-game-target {
+  position: absolute;
+  top: 0;
+  height: 14px;
+  width: 22%;
+  left: 39%;
+  background: #56c3ff;
+  border-radius: 8px;
+}
+
+.mini-game-marker {
+  position: absolute;
+  top: 0;
+  height: 14px;
+  width: 8px;
+  left: 0%;
+  background: #ffd15e;
+  border-radius: 8px;
+}
+
 .shop-item p, .inv-item p {
   margin: 0.2rem 0;
   font-size: 0.86rem;
@@ -219,6 +291,14 @@ progress {
   width: 160px;
   padding: 0.35rem;
   border-radius: 6px;
+  border: 1px solid #4c4f89;
+  background: #0e1020;
+  color: #f8f2ff;
+}
+
+input[type="text"] {
+  padding: 0.42rem;
+  border-radius: 7px;
   border: 1px solid #4c4f89;
   background: #0e1020;
   color: #f8f2ff;

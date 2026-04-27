@@ -1,8 +1,8 @@
 const worlds = [
-  { id: "academy", name: "Sky Academy", difficulty: 1, unlockGemCost: 0, enemy: "Rookie Duelist", rewardGold: 35, rewardGems: 3 },
-  { id: "ember", name: "Ember Wastes", difficulty: 2, unlockGemCost: 20, enemy: "Flare Ronin", rewardGold: 65, rewardGems: 5 },
-  { id: "tide", name: "Tide Shrine", difficulty: 3, unlockGemCost: 35, enemy: "Abyss Priestess", rewardGold: 100, rewardGems: 8 },
-  { id: "shade", name: "Shade Citadel", difficulty: 4, unlockGemCost: 55, enemy: "Night Marshal", rewardGold: 145, rewardGems: 12 },
+  { id: "academy", name: "Sky Academy", difficulty: 1, unlockGemCost: 0, enemy: "Rookie Duelist", rewardGold: 35, rewardGems: 3, minStoryIndex: 0 },
+  { id: "ember", name: "Ember Wastes", difficulty: 2, unlockGemCost: 20, enemy: "Flare Ronin", rewardGold: 65, rewardGems: 5, minStoryIndex: 1 },
+  { id: "tide", name: "Tide Shrine", difficulty: 3, unlockGemCost: 35, enemy: "Abyss Priestess", rewardGold: 100, rewardGems: 8, minStoryIndex: 2 },
+  { id: "shade", name: "Shade Citadel", difficulty: 4, unlockGemCost: 55, enemy: "Night Marshal", rewardGold: 145, rewardGems: 12, minStoryIndex: 3 },
 ];
 
 const storyChapters = [
@@ -62,6 +62,49 @@ const baseDeck = [
   { id: "combo", name: "Twin Comet", cost: 2, type: "combo", value: 10, text: "Deal 10. If used after attack, deal +10." },
 ];
 
+const deckCatalog = [
+  { id: "bolt", name: "Star Bolt", cost: 1, type: "attack", value: 12, text: "Deal 12 damage." },
+  { id: "guard", name: "Ward Guard", cost: 1, type: "guard", value: 8, text: "Gain 8 shield this turn." },
+  { id: "focus", name: "Focus Sigil", cost: 0, type: "buff", value: 1, text: "Gain +1 energy." },
+  { id: "slash", name: "Arc Slash", cost: 2, type: "attack", value: 20, text: "Deal 20 damage." },
+  { id: "drain", name: "Moon Drain", cost: 2, type: "lifesteal", value: 14, text: "Deal 14 and heal 7." },
+  { id: "combo", name: "Twin Comet", cost: 2, type: "combo", value: 10, text: "Deal 10. If used after attack, deal +10." },
+];
+
+const worldEvents = [
+  { id: "event-academy", worldId: "academy", title: "Freshman Festival", story: "Friendly duels and bonus training all week.", bonusGold: 20, bonusGems: 2 },
+  { id: "event-ember", worldId: "ember", title: "Ashstorm Alert", story: "Harsh winds increase rewards for brave mages.", bonusGold: 35, bonusGems: 3 },
+  { id: "event-tide", worldId: "tide", title: "Moon-Tide Bloom", story: "Rare tide blossoms grant extra battle payout.", bonusGold: 45, bonusGems: 4 },
+  { id: "event-shade", worldId: "shade", title: "Night Lantern Rite", story: "Citadel guardians grant elite trial rewards.", bonusGold: 60, bonusGems: 5 },
+];
+
+const companionCatalog = [
+  { id: "luna", name: "Luna Vesper", rarity: "Epic", vibe: "Moonblade Muse", hpBonus: 12, burstStart: 10, goldBonusPct: 8, blurb: "A calm moon duelist with silver fan blades.", skillType: "teamShield", skillValue: 15 },
+  { id: "aiko", name: "Aiko Emberheart", rarity: "Rare", vibe: "Blaze Idol", hpBonus: 8, burstStart: 8, goldBonusPct: 6, blurb: "Performs blazing charm spells that hype the team.", skillType: "burstCharge", skillValue: 22 },
+  { id: "mira", name: "Mira Tidecall", rarity: "Rare", vibe: "Ocean Songstress", hpBonus: 10, burstStart: 6, goldBonusPct: 5, blurb: "Her tide melodies shield friends in battle.", skillType: "teamHeal", skillValue: 16 },
+  { id: "nyx", name: "Nyx Starweaver", rarity: "Legendary", vibe: "Celestial Oracle", hpBonus: 18, burstStart: 15, goldBonusPct: 12, blurb: "A cosmic prodigy who reads fate from starlight.", skillType: "trueDamage", skillValue: 26 },
+  { id: "kiko", name: "Kiko Sprouttail", rarity: "Common", vibe: "Forest Familiar", hpBonus: 5, burstStart: 4, goldBonusPct: 3, blurb: "Small, cheerful, and always scouting rare drops.", skillType: "energyBoost", skillValue: 1 },
+  { id: "sera", name: "Sera Prismveil", rarity: "Epic", vibe: "Prism Shrine Keeper", hpBonus: 14, burstStart: 12, goldBonusPct: 9, blurb: "Channels rainbow sigils that empower every spell.", skillType: "doubleStrike", skillValue: 12 },
+];
+
+const bannerRotation = [
+  { dateKey: "Mon", companionId: "nyx" },
+  { dateKey: "Tue", companionId: "sera" },
+  { dateKey: "Wed", companionId: "luna" },
+  { dateKey: "Thu", companionId: "aiko" },
+  { dateKey: "Fri", companionId: "nyx" },
+  { dateKey: "Sat", companionId: "mira" },
+  { dateKey: "Sun", companionId: "sera" },
+];
+
+const petCatalog = [
+  { id: "puff", name: "Puffdrake", rarity: "Common", hpBonus: 6, energyBonus: 0, goldBonusPct: 4, blurb: "A tiny dragonlet that hoards shiny crowns." },
+  { id: "nibble", name: "Nibblefox", rarity: "Rare", hpBonus: 8, energyBonus: 1, goldBonusPct: 5, blurb: "Quick paws and lucky instincts for loot runs." },
+  { id: "glim", name: "Glimmoth", rarity: "Rare", hpBonus: 7, energyBonus: 1, goldBonusPct: 4, blurb: "A moon moth that boosts focus in battle." },
+  { id: "auri", name: "Auripup", rarity: "Epic", hpBonus: 12, energyBonus: 1, goldBonusPct: 7, blurb: "A radiant spirit hound with warm healing aura." },
+  { id: "myth", name: "Mythowl", rarity: "Legendary", hpBonus: 16, energyBonus: 2, goldBonusPct: 10, blurb: "An ancient owl that guides arcane masters." },
+];
+
 const initialState = {
   profile: {
     name: "Mage",
@@ -78,6 +121,11 @@ const initialState = {
   player: { hp: 100, maxHp: 100, energy: 1, shield: 0, burst: 0 },
   enemy: { name: "Enemy", hp: 100, maxHp: 100, energy: 1, shield: 0 },
   hand: [],
+  deckList: ["bolt", "guard", "focus", "slash", "drain", "combo"],
+  ownedCompanions: { kiko: { copies: 1, affinity: 1 } },
+  activeCompanionId: "kiko",
+  ownedPets: { puff: { copies: 1, level: 1, exp: 0 } },
+  activePetId: "puff",
   inventory: {},
   questProgress: {},
   completedQuestIds: [],
@@ -86,11 +134,26 @@ const initialState = {
   activeShopCategory: "all",
   rotationSeed: 0,
   turnAttackPlayed: false,
+  summonWithoutLegendary: 0,
+  companionSkillUsedThisBattle: false,
+  miniGamePlaysToday: 0,
+  miniGameDayKey: "",
+  miniGameSession: null,
   gameOver: false,
   log: [],
 };
 
 let state = loadState();
+let online = {
+  ws: null,
+  bc: null,
+  connected: false,
+  roomId: "",
+  users: [],
+  chat: [],
+  mode: "offline",
+  username: "Mage",
+};
 
 function loadState() {
   const raw = localStorage.getItem("arcane-star-save");
@@ -121,12 +184,159 @@ function ensureWeeklySpendWindow() {
 }
 
 function randomCard() {
-  return { ...baseDeck[Math.floor(Math.random() * baseDeck.length)] };
+  const deckIds = state.deckList?.length ? state.deckList : ["bolt", "guard", "focus", "slash", "drain", "combo"];
+  const randomId = deckIds[Math.floor(Math.random() * deckIds.length)];
+  const card = deckCatalog.find((c) => c.id === randomId) || deckCatalog[0];
+  return { ...card };
 }
 
 function log(msg) {
   state.log.unshift(msg);
   state.log = state.log.slice(0, 35);
+}
+
+function pushOnlineLog(message) {
+  online.chat.unshift(message);
+  online.chat = online.chat.slice(0, 40);
+}
+
+function connectOnline() {
+  const isGitHubPages = window.location.hostname.endsWith("github.io");
+  if (isGitHubPages) {
+    online.mode = "broadcast";
+    online.connected = true;
+    online.bc = new BroadcastChannel("arcane-star-plaza");
+    online.bc.onmessage = (event) => {
+      const data = event.data || {};
+      if (data.type === "presence" && data.roomId === online.roomId) {
+        online.users = data.users || [];
+      } else if (data.type === "chat" && data.roomId === online.roomId) {
+        pushOnlineLog(`[${new Date(data.ts).toLocaleTimeString()}] ${data.username}: ${data.text}`);
+      } else if (data.type === "statePing" && data.roomId === online.roomId) {
+        pushOnlineLog(`[Status] ${data.username}: ${data.status}`);
+      }
+      renderOnline();
+    };
+    pushOnlineLog("[System] GitHub Pages mode active (tab-local room sync).");
+    renderOnline();
+    return;
+  }
+
+  online.mode = "websocket";
+  const proto = window.location.protocol === "https:" ? "wss" : "ws";
+  const url = `${proto}://${window.location.host}/ws`;
+  try {
+    online.ws = new WebSocket(url);
+  } catch {
+    return;
+  }
+
+  online.ws.onopen = () => {
+    online.connected = true;
+    pushOnlineLog("[System] Connected to online plaza.");
+    renderOnline();
+  };
+  online.ws.onclose = () => {
+    online.connected = false;
+    online.mode = "offline";
+    pushOnlineLog("[System] Disconnected from online plaza.");
+    renderOnline();
+  };
+  online.ws.onerror = () => {
+    online.connected = false;
+    online.mode = "offline";
+    pushOnlineLog("[System] Online server unavailable.");
+    renderOnline();
+  };
+  online.ws.onmessage = (event) => {
+    let data;
+    try {
+      data = JSON.parse(event.data);
+    } catch {
+      return;
+    }
+    if (data.type === "presence") {
+      online.users = data.users || [];
+    } else if (data.type === "chatHistory") {
+      const history = (data.chat || []).map((m) => `[${new Date(m.ts).toLocaleTimeString()}] ${m.username}: ${m.text}`);
+      online.chat = history.reverse().slice(0, 40);
+    } else if (data.type === "chat" && data.message) {
+      pushOnlineLog(`[${new Date(data.message.ts).toLocaleTimeString()}] ${data.message.username}: ${data.message.text}`);
+    } else if (data.type === "statePing") {
+      pushOnlineLog(`[Status] ${data.from}: ${data.status}`);
+    }
+    renderOnline();
+  };
+}
+
+function sendOnline(payload) {
+  if (online.mode === "broadcast" && online.bc) {
+    online.bc.postMessage(payload);
+    return;
+  }
+  if (online.ws && online.ws.readyState === 1) {
+    online.ws.send(JSON.stringify(payload));
+  }
+}
+
+function joinOnlineRoom() {
+  const nameInput = document.getElementById("onlineNameInput");
+  const roomInput = document.getElementById("roomIdInput");
+  const username = (nameInput.value || state.profile.name || "Mage").trim().slice(0, 20);
+  const roomId = (roomInput.value || "academy-hall").trim().slice(0, 30);
+  online.username = username;
+  if (!online.connected) {
+    pushOnlineLog("[System] Not connected yet, retry in a moment.");
+    renderOnline();
+    return;
+  }
+  online.roomId = roomId;
+  if (online.mode === "broadcast") {
+    online.users = [username];
+    sendOnline({ type: "presence", roomId, users: online.users });
+    pushOnlineLog(`[System] Joined room: ${roomId} (GitHub Pages local mode)`);
+  } else {
+    sendOnline({ type: "joinRoom", roomId, username });
+    pushOnlineLog(`[System] Joined room: ${roomId}`);
+  }
+  renderOnline();
+}
+
+function sendChat() {
+  const input = document.getElementById("chatInput");
+  const text = (input.value || "").trim();
+  if (!text) return;
+  if (online.mode === "broadcast") {
+    sendOnline({ type: "chat", roomId: online.roomId, username: online.username, text, ts: Date.now() });
+    pushOnlineLog(`[${new Date().toLocaleTimeString()}] ${online.username}: ${text}`);
+  } else {
+    sendOnline({ type: "chat", text });
+  }
+  input.value = "";
+}
+
+function pingStatus() {
+  const status = state.activeWorldId
+    ? `In battle at ${worlds.find((w) => w.id === state.activeWorldId)?.name || "Unknown"}`
+    : "Hanging in the academy";
+  if (online.mode === "broadcast") {
+    sendOnline({ type: "statePing", roomId: online.roomId, username: online.username, status });
+    pushOnlineLog(`[Status] ${online.username}: ${status}`);
+  } else {
+    sendOnline({ type: "statePing", status });
+  }
+}
+
+function renderOnline() {
+  const status = document.getElementById("onlineStatus");
+  const presence = document.getElementById("roomPresence");
+  const chat = document.getElementById("onlineChatLog");
+  if (!status || !presence || !chat) return;
+  status.textContent = online.connected
+    ? `Connected (${online.mode})${online.roomId ? ` | Room: ${online.roomId}` : ""}`
+    : "Not connected";
+  presence.textContent = `Players: ${online.users.length ? online.users.join(", ") : "none"}`;
+  chat.textContent = online.chat.join("\n");
 }
 
 function draw(count = 1) {
@@ -140,10 +350,16 @@ function clamp(v, min, max) {
 function startBattle(worldId) {
   const world = worlds.find((w) => w.id === worldId);
   if (!world) return;
+  if (!meetsStoryGate(world)) {
+    log(`Story gate: reach ${storyChapters[world.minStoryIndex].title} first.`);
+    render();
+    return;
+  }
   state.activeWorldId = world.id;
   state.gameOver = false;
   state.hand = [];
   state.turnAttackPlayed = false;
+  state.companionSkillUsedThisBattle = false;
   state.log = [];
   state.player = { hp: 100, maxHp: 100, energy: 2, shield: 0, burst: 0 };
   state.enemy = {
@@ -153,6 +369,8 @@ function startBattle(worldId) {
     energy: 1 + world.difficulty,
     shield: 0,
   };
+  applyCompanionBattleStartBonus();
+  applyPetBattleStartBonus();
   draw(3);
   log(`Entered ${world.name}. ${world.enemy} challenges you.`);
   render();
@@ -266,7 +484,21 @@ function winBattle() {
   state.profile.crowns += Math.ceil(world.rewardGems / 2);
   state.profile.clearedWorlds[world.id] = true;
   state.questProgress[world.id] = (state.questProgress[world.id] || 0) + 1;
-  log(`Victory! +${world.rewardGold} gold, +${world.rewardGems} gems, +${Math.ceil(world.rewardGems / 2)} crowns.`);
+  const event = getEventForWorld(world.id);
+  const eventGold = event ? event.bonusGold : 0;
+  const eventGems = event ? event.bonusGems : 0;
+  const companion = getActiveCompanion();
+  const pet = getActivePet();
+  const baseGoldThisFight = world.rewardGold + eventGold;
+  const companionGoldBonus = companion ? Math.floor(baseGoldThisFight * (companion.goldBonusPct / 100)) : 0;
+  const petGoldBonus = pet ? Math.floor(baseGoldThisFight * (pet.goldBonusPct / 100)) : 0;
+  state.profile.gold += eventGold + companionGoldBonus + petGoldBonus;
+  state.profile.gems += eventGems;
+  if (companion && state.ownedCompanions[companion.id]) {
+    state.ownedCompanions[companion.id].affinity += 1;
+  }
+  grantPetExp(6 + world.difficulty * 2);
+  log(`Victory! +${world.rewardGold + eventGold + companionGoldBonus + petGoldBonus} gold, +${world.rewardGems + eventGems} gems, +${Math.ceil(world.rewardGems / 2)} crowns.`);
   checkQuestCompletion(world.id);
   persist();
   render();
@@ -282,6 +514,11 @@ function loseBattle() {
 function unlockWorld(worldId) {
   const world = worlds.find((w) => w.id === worldId);
   if (!world || state.profile.unlockedWorldIds.includes(world.id)) return;
+  if (!meetsStoryGate(world)) {
+    log(`Complete story to unlock ${world.name}.`);
+    render();
+    return;
+  }
   if (state.profile.gems < world.unlockGemCost) {
     log(`Need ${world.unlockGemCost} gems for ${world.name}.`);
     render();
@@ -295,9 +532,106 @@ function unlockWorld(worldId) {
 }
 
 function resetSave() {
+  if (state.miniGameSession?.timer) clearInterval(state.miniGameSession.timer);
   localStorage.removeItem("arcane-star-save");
   state = structuredClone(initialState);
   render();
+}
+
+function meetsStoryGate(world) {
+  return state.profile.storyIndex >= (world.minStoryIndex || 0);
+}
+
+function getActiveCompanion() {
+  return companionCatalog.find((c) => c.id === state.activeCompanionId) || null;
+}
+
+function getActivePet() {
+  return petCatalog.find((p) => p.id === state.activePetId) || null;
+}
+
+function applyCompanionBattleStartBonus() {
+  const companion = getActiveCompanion();
+  if (!companion) return;
+  state.player.maxHp += companion.hpBonus;
+  state.player.hp += companion.hpBonus;
+  state.player.burst = clamp(state.player.burst + companion.burstStart, 0, 100);
+}
+
+function applyPetBattleStartBonus() {
+  const pet = getActivePet();
+  if (!pet) return;
+  const petData = state.ownedPets[pet.id];
+  const level = petData?.level || 1;
+  state.player.maxHp += pet.hpBonus + Math.floor(level / 2);
+  state.player.hp += pet.hpBonus + Math.floor(level / 2);
+  state.player.energy += pet.energyBonus;
+}
+
+function getRateUpCompanionId() {
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const today = days[new Date().getDay()];
+  const entry = bannerRotation.find((item) => item.dateKey === today);
+  return entry?.companionId || "nyx";
+}
+
+function useCompanionSkill() {
+  if (state.gameOver || !state.activeWorldId) {
+    log("Start a battle to use companion skills.");
+    render();
+    return;
+  }
+  if (state.companionSkillUsedThisBattle) {
+    log("Companion skill already used this battle.");
+    render();
+    return;
+  }
+  const companion = getActiveCompanion();
+  if (!companion) {
+    log("No active companion selected.");
+    render();
+    return;
+  }
+
+  if (companion.skillType === "teamShield") {
+    state.player.shield += companion.skillValue;
+    log(`${companion.name} casts Moon Guard: +${companion.skillValue} shield.`);
+  } else if (companion.skillType === "burstCharge") {
+    state.player.burst = clamp(state.player.burst + companion.skillValue, 0, 100);
+    log(`${companion.name} ignites the crowd: +${companion.skillValue} burst.`);
+  } else if (companion.skillType === "teamHeal") {
+    const before = state.player.hp;
+    state.player.hp = clamp(state.player.hp + companion.skillValue, 0, state.player.maxHp);
+    log(`${companion.name} sings a healing tide: +${state.player.hp - before} HP.`);
+  } else if (companion.skillType === "trueDamage") {
+    state.enemy.hp -= companion.skillValue;
+    log(`${companion.name} threads fate: ${companion.skillValue} true damage.`);
+  } else if (companion.skillType === "energyBoost") {
+    state.player.energy += companion.skillValue;
+    log(`${companion.name} energizes your turn: +${companion.skillValue} energy.`);
+  } else if (companion.skillType === "doubleStrike") {
+    const dealt = damageTarget(state.enemy, companion.skillValue);
+    state.enemy.hp -= dealt;
+    state.player.energy += 1;
+    log(`${companion.name} triggers Prism Echo: ${dealt} bonus damage and +1 energy.`);
+  }
+
+  state.companionSkillUsedThisBattle = true;
+  if (state.enemy.hp <= 0) winBattle();
+  render();
+}
+
+function grantPetExp(amount) {
+  const pet = getActivePet();
+  if (!pet || !state.ownedPets[pet.id]) return;
+  const data = state.ownedPets[pet.id];
+  data.exp += amount;
+  const needed = data.level * 15;
+  if (data.exp >= needed) {
+    data.exp -= needed;
+    data.level += 1;
+    log(`${pet.name} reached level ${data.level}.`);
+  }
 }
 
 function buyCurrencyPack(packId) {
@@ -399,6 +733,14 @@ function advanceStory() {
   }
   state.profile.storyIndex += 1;
   log(`Unlocked ${storyChapters[state.profile.storyIndex].title}.`);
+  worlds.forEach((world) => {
+    const prevWorld = worlds.find((w) => w.minStoryIndex === (world.minStoryIndex || 0) - 1);
+    const prevCleared = !prevWorld || state.profile.clearedWorlds[prevWorld.id];
+    if (meetsStoryGate(world) && prevCleared && !state.profile.unlockedWorldIds.includes(world.id)) {
+      state.profile.unlockedWorldIds.push(world.id);
+      log(`${world.name} is now available through the story.`);
+    }
+  });
   persist();
   render();
 }
@@ -432,6 +774,326 @@ function getRotatingShopItems() {
   return items;
 }
 
+function getEventForWorld(worldId) {
+  const stock = getTodaysEvents();
+  return stock.find((e) => e.worldId === worldId);
+}
+
+function getTodaysEvents() {
+  const daySeed = new Date().toDateString();
+  const seedNum = Array.from(daySeed).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return worldEvents.filter((_, index) => (seedNum + index) % 2 === 0);
+}
+
+function toggleDeckCard(cardId) {
+  const inDeck = state.deckList.includes(cardId);
+  if (inDeck) {
+    if (state.deckList.length <= 4) {
+      log("Deck must keep at least 4 cards.");
+      render();
+      return;
+    }
+    state.deckList = state.deckList.filter((id) => id !== cardId);
+    log("Card removed from battle deck.");
+  } else {
+    if (state.deckList.length >= 12) {
+      log("Deck is full (max 12 cards).");
+      render();
+      return;
+    }
+    state.deckList.push(cardId);
+    log("Card added to battle deck.");
+  }
+  persist();
+  render();
+}
+
+function getSummonPool() {
+  return [
+    { rarity: "Common", chance: 52 },
+    { rarity: "Rare", chance: 30 },
+    { rarity: "Epic", chance: 14 },
+    { rarity: "Legendary", chance: 4 },
+  ];
+}
+
+function rollCompanion() {
+  const rateUpId = getRateUpCompanionId();
+  const guaranteedLegendary = state.summonWithoutLegendary >= 39;
+  if (guaranteedLegendary) {
+    state.summonWithoutLegendary = 0;
+    if (Math.random() < 0.65) {
+      return companionCatalog.find((c) => c.id === rateUpId) || companionCatalog.find((c) => c.rarity === "Legendary") || companionCatalog[0];
+    }
+    const allLegendary = companionCatalog.filter((c) => c.rarity === "Legendary");
+    return allLegendary[Math.floor(Math.random() * allLegendary.length)] || companionCatalog[0];
+  }
+
+  if (Math.random() < 0.15) {
+    return companionCatalog.find((c) => c.id === rateUpId) || companionCatalog[0];
+  }
+
+  const pool = getSummonPool();
+  const r = Math.random() * 100;
+  let cursor = 0;
+  let pickedRarity = "Common";
+  pool.forEach((entry) => {
+    cursor += entry.chance;
+    if (r <= cursor && pickedRarity === "Common") pickedRarity = entry.rarity;
+  });
+  const candidates = companionCatalog.filter((c) => c.rarity === pickedRarity);
+  const pulled = candidates[Math.floor(Math.random() * candidates.length)] || companionCatalog[0];
+  if (pulled.rarity === "Legendary") state.summonWithoutLegendary = 0;
+  else state.summonWithoutLegendary += 1;
+  return pulled;
+}
+
+function addCompanionPull(companion) {
+  if (!state.ownedCompanions[companion.id]) {
+    state.ownedCompanions[companion.id] = { copies: 0, affinity: 1 };
+  }
+  state.ownedCompanions[companion.id].copies += 1;
+  return state.ownedCompanions[companion.id].copies === 1;
+}
+
+function summonCompanions(count, totalCostOverride = null) {
+  const costPer = 30;
+  const total = totalCostOverride == null ? count * costPer : totalCostOverride;
+  if (state.profile.gems < total) {
+    log(`Need ${total} gems to summon x${count}.`);
+    render();
+    return;
+  }
+  state.profile.gems -= total;
+  let newCount = 0;
+  for (let i = 0; i < count; i++) {
+    const pulled = rollCompanion();
+    const isNew = addCompanionPull(pulled);
+    if (isNew) newCount += 1;
+    log(`Summoned ${pulled.name} (${pulled.rarity})${isNew ? " [NEW]" : ""}.`);
+  }
+  if (newCount > 0 && !state.activeCompanionId) {
+    const firstOwnedId = Object.keys(state.ownedCompanions)[0];
+    state.activeCompanionId = firstOwnedId || null;
+  }
+  persist();
+  render();
+}
+
+function setActiveCompanion(companionId) {
+  if (!state.ownedCompanions[companionId]) return;
+  state.activeCompanionId = companionId;
+  log(`Active companion set to ${companionCatalog.find((c) => c.id === companionId)?.name || companionId}.`);
+  persist();
+  render();
+}
+
+function hatchPet() {
+  const cost = 40;
+  if (state.profile.gems < cost) {
+    log(`Need ${cost} gems to hatch an egg.`);
+    render();
+    return;
+  }
+  state.profile.gems -= cost;
+  const pulled = petCatalog[Math.floor(Math.random() * petCatalog.length)];
+  if (!state.ownedPets[pulled.id]) {
+    state.ownedPets[pulled.id] = { copies: 0, level: 1, exp: 0 };
+  }
+  state.ownedPets[pulled.id].copies += 1;
+  if (!state.activePetId) state.activePetId = pulled.id;
+  log(`Hatched ${pulled.name} (${pulled.rarity}).`);
+  persist();
+  render();
+}
+
+function setActivePet(petId) {
+  if (!state.ownedPets[petId]) return;
+  state.activePetId = petId;
+  log(`Active pet set to ${petCatalog.find((p) => p.id === petId)?.name || petId}.`);
+  persist();
+  render();
+}
+
+function feedActivePet() {
+  const pet = getActivePet();
+  if (!pet || !state.ownedPets[pet.id]) {
+    log("No active pet selected.");
+    render();
+    return;
+  }
+  if (state.profile.gold < 25) {
+    log("Need 25 gold to feed pet.");
+    render();
+    return;
+  }
+  state.profile.gold -= 25;
+  grantPetExp(8);
+  log(`${pet.name} enjoyed a snack. +8 pet EXP.`);
+  persist();
+  render();
+}
+
+function trainActivePet() {
+  const pet = getActivePet();
+  if (!pet || !state.ownedPets[pet.id]) {
+    log("No active pet selected.");
+    render();
+    return;
+  }
+  if (state.profile.gold < 40) {
+    log("Need 40 gold to train pet.");
+    render();
+    return;
+  }
+  state.profile.gold -= 40;
+  grantPetExp(14);
+  log(`${pet.name} completed training. +14 pet EXP.`);
+  persist();
+  render();
+}
+
+function ensureMiniGameDay() {
+  const key = new Date().toDateString();
+  if (state.miniGameDayKey !== key) {
+    state.miniGameDayKey = key;
+    state.miniGamePlaysToday = 0;
+  }
+}
+
+function playMiniGame(kind) {
+  if (kind === "rhythm") {
+    startRhythmMiniGame();
+    return;
+  }
+  if (kind === "memory") {
+    startMemoryMiniGame();
+    return;
+  }
+  if (kind === "runner") {
+    startRunnerMiniGame();
+    return;
+  }
+}
+
+function canPlayMiniGame() {
+  ensureMiniGameDay();
+  if (state.miniGamePlaysToday >= 6) {
+    log("Mini-game daily limit reached (6).");
+    render();
+    return false;
+  }
+  return true;
+}
+
+function rewardMiniGame(scoreTier, kind) {
+  let rewardGold = 0;
+  let rewardGems = 0;
+  let petExp = 0;
+  if (kind === "rhythm") {
+    rewardGold = scoreTier === "great" ? 70 : scoreTier === "good" ? 52 : 34;
+    rewardGems = scoreTier === "great" ? 4 : scoreTier === "good" ? 3 : 1;
+    petExp = scoreTier === "great" ? 12 : scoreTier === "good" ? 9 : 6;
+  } else if (kind === "memory") {
+    rewardGold = scoreTier === "great" ? 78 : scoreTier === "good" ? 55 : 30;
+    rewardGems = scoreTier === "great" ? 4 : scoreTier === "good" ? 2 : 1;
+    petExp = scoreTier === "great" ? 14 : scoreTier === "good" ? 10 : 7;
+  } else {
+    rewardGold = scoreTier === "great" ? 75 : scoreTier === "good" ? 54 : 32;
+    rewardGems = scoreTier === "great" ? 3 : scoreTier === "good" ? 2 : 1;
+    petExp = scoreTier === "great" ? 13 : scoreTier === "good" ? 9 : 6;
+  }
+  state.profile.gold += rewardGold;
+  state.profile.gems += rewardGems;
+  state.miniGamePlaysToday += 1;
+  grantPetExp(petExp);
+  log(`Mini-game (${kind}) ${scoreTier}: +${rewardGold} gold, +${rewardGems} gems, +${petExp} pet EXP.`);
+  persist();
+  render();
+}
+
+function startRhythmMiniGame() {
+  if (!canPlayMiniGame()) return;
+  if (state.miniGameSession?.timer) clearInterval(state.miniGameSession.timer);
+  state.miniGameSession = {
+    type: "rhythm",
+    markerPos: 0,
+    markerDir: 1,
+    timer: null,
+  };
+  render();
+  state.miniGameSession.timer = setInterval(() => {
+    if (!state.miniGameSession || state.miniGameSession.type !== "rhythm") return;
+    state.miniGameSession.markerPos += 3 * state.miniGameSession.markerDir;
+    if (state.miniGameSession.markerPos >= 100) {
+      state.miniGameSession.markerPos = 100;
+      state.miniGameSession.markerDir = -1;
+    }
+    if (state.miniGameSession.markerPos <= 0) {
+      state.miniGameSession.markerPos = 0;
+      state.miniGameSession.markerDir = 1;
+    }
+    renderMiniGameArea();
+  }, 70);
+}
+
+function resolveRhythmMiniGame() {
+  const s = state.miniGameSession;
+  if (!s || s.type !== "rhythm") return;
+  clearInterval(s.timer);
+  const centerDistance = Math.abs(50 - s.markerPos);
+  const tier = centerDistance <= 8 ? "great" : centerDistance <= 18 ? "good" : "ok";
+  state.miniGameSession = null;
+  rewardMiniGame(tier, "rhythm");
+}
+
+function startMemoryMiniGame() {
+  if (!canPlayMiniGame()) return;
+  if (state.miniGameSession?.timer) clearInterval(state.miniGameSession.timer);
+  const symbols = ["Sun", "Moon", "Star", "Wave"];
+  const seq = [];
+  for (let i = 0; i < 4; i++) seq.push(symbols[Math.floor(Math.random() * symbols.length)]);
+  state.miniGameSession = {
+    type: "memory",
+    sequence: seq,
+    input: "",
+  };
+  render();
+}
+
+function resolveMemoryMiniGame(input) {
+  const s = state.miniGameSession;
+  if (!s || s.type !== "memory") return;
+  const expected = s.sequence.map((x) => x[0]).join("");
+  const cleaned = (input || "").toUpperCase().trim();
+  let matches = 0;
+  for (let i = 0; i < Math.min(expected.length, cleaned.length); i++) {
+    if (expected[i] === cleaned[i]) matches += 1;
+  }
+  const tier = matches >= 4 ? "great" : matches >= 3 ? "good" : "ok";
+  state.miniGameSession = null;
+  rewardMiniGame(tier, "memory");
+}
+
+function startRunnerMiniGame() {
+  if (!canPlayMiniGame()) return;
+  if (state.miniGameSession?.timer) clearInterval(state.miniGameSession.timer);
+  const safeLane = 1 + Math.floor(Math.random() * 3);
+  state.miniGameSession = {
+    type: "runner",
+    safeLane,
+  };
+  render();
+}
+
+function resolveRunnerMiniGame(choiceLane) {
+  const s = state.miniGameSession;
+  if (!s || s.type !== "runner") return;
+  const tier = Number(choiceLane) === s.safeLane ? "great" : Math.abs(Number(choiceLane) - s.safeLane) === 1 ? "good" : "ok";
+  state.miniGameSession = null;
+  rewardMiniGame(tier, "runner");
+}
+
 function renderWorlds() {
   const worldList = document.getElementById("worldList");
   worldList.innerHTML = "";
@@ -439,11 +1101,14 @@ function renderWorlds() {
   worlds.forEach((world) => {
     const unlocked = state.profile.unlockedWorldIds.includes(world.id);
     const cleared = !!state.profile.clearedWorlds[world.id];
+    const storyReady = meetsStoryGate(world);
 
     const card = document.createElement("article");
     card.className = `world-card ${unlocked ? "" : "locked"}`.trim();
 
-    const status = unlocked ? (cleared ? "Cleared" : "Unlocked") : `Locked (${world.unlockGemCost} gems)`;
+    const status = storyReady
+      ? (unlocked ? (cleared ? "Cleared" : "Unlocked") : `Locked (${world.unlockGemCost} gems)`)
+      : `Story locked (need Chapter ${world.minStoryIndex + 1})`;
     card.innerHTML = `
       <h3>${world.name}</h3>
       <p>Enemy: ${world.enemy}</p>
@@ -457,6 +1122,7 @@ function renderWorlds() {
       action.onclick = () => startBattle(world.id);
     } else {
       action.textContent = "Unlock";
+      action.disabled = !storyReady;
       action.onclick = () => unlockWorld(world.id);
     }
     card.appendChild(action);
@@ -610,8 +1276,211 @@ function renderEconomy() {
   document.getElementById("spendStatus").textContent = `Spent this week: ${state.weeklyCrownSpent}/${state.profile.weeklyCrownSpendCap} crowns.`;
 }
 
+function renderDeckBuilder() {
+  const container = document.getElementById("deckBuilder");
+  container.innerHTML = "";
+  document.getElementById("deckCount").textContent = state.deckList.length;
+
+  deckCatalog.forEach((card) => {
+    const active = state.deckList.includes(card.id);
+    const el = document.createElement("article");
+    el.className = `shop-item ${active ? "active" : ""}`.trim();
+    el.innerHTML = `
+      <h4>${card.name}</h4>
+      <p>Cost: ${card.cost}</p>
+      <p>${card.text}</p>
+      <p>Status: ${active ? "In Deck" : "Out of Deck"}</p>
+    `;
+    const btn = document.createElement("button");
+    btn.textContent = active ? "Remove" : "Add";
+    btn.onclick = () => toggleDeckCard(card.id);
+    el.appendChild(btn);
+    container.appendChild(el);
+  });
+}
+
+function renderEvents() {
+  const container = document.getElementById("worldEventList");
+  if (!container) return;
+  container.innerHTML = "";
+  const todayEvents = getTodaysEvents();
+  if (!todayEvents.length) {
+    container.innerHTML = "<article class='shop-item'><p>No active events today.</p></article>";
+    return;
+  }
+  todayEvents.forEach((event) => {
+    const worldName = worlds.find((w) => w.id === event.worldId)?.name || event.worldId;
+    const el = document.createElement("article");
+    el.className = "shop-item";
+    el.innerHTML = `
+      <h4>${event.title}</h4>
+      <p>World: ${worldName}</p>
+      <p>${event.story}</p>
+      <p>Bonus: +${event.bonusGold} gold, +${event.bonusGems} gems per win</p>
+    `;
+    container.appendChild(el);
+  });
+}
+
+function renderCompanions() {
+  const container = document.getElementById("companionRoster");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const ownedIds = Object.keys(state.ownedCompanions || {});
+  if (!ownedIds.length) {
+    container.innerHTML = "<article class='shop-item'><p>No companions summoned yet.</p></article>";
+    return;
+  }
+
+  ownedIds.forEach((id) => {
+    const meta = companionCatalog.find((c) => c.id === id);
+    if (!meta) return;
+    const owned = state.ownedCompanions[id];
+    const active = state.activeCompanionId === id;
+    const card = document.createElement("article");
+    card.className = `companion-card ${active ? "active" : ""}`.trim();
+    card.innerHTML = `
+      <h4>${meta.name}</h4>
+      <p>Rarity: ${meta.rarity}</p>
+      <p>Vibe: ${meta.vibe}</p>
+      <p>${meta.blurb}</p>
+      <p>Copies: ${owned.copies}</p>
+      <p>Affinity: ${owned.affinity}</p>
+      <p>Bonus: +${meta.hpBonus} HP, +${meta.burstStart} burst, +${meta.goldBonusPct}% gold</p>
+      <p>Skill: ${meta.skillType} (${meta.skillValue})</p>
+    `;
+    const btn = document.createElement("button");
+    btn.textContent = active ? "Active" : "Set Active";
+    btn.disabled = active;
+    btn.onclick = () => setActiveCompanion(id);
+    card.appendChild(btn);
+    container.appendChild(card);
+  });
+}
+
+function renderBondScenes() {
+  const container = document.getElementById("bondSceneList");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const ownedIds = Object.keys(state.ownedCompanions || {});
+  if (!ownedIds.length) {
+    container.innerHTML = "<article class='bond-scene'><p>Summon companions to unlock bond stories.</p></article>";
+    return;
+  }
+
+  ownedIds.forEach((id) => {
+    const companion = companionCatalog.find((c) => c.id === id);
+    const owned = state.ownedCompanions[id];
+    if (!companion || !owned) return;
+
+    const affinity = owned.affinity || 0;
+    const unlockedStage = affinity >= 20 ? 3 : affinity >= 10 ? 2 : affinity >= 3 ? 1 : 0;
+    const snippets = [
+      "Reach affinity 3 to unlock this scene.",
+      `${companion.name} invites you to after-class training and shares her dream for the academy.`,
+      `${companion.name} opens up about her fears, and you promise to face the next world together.`,
+      `${companion.name} performs a special festival oath scene, celebrating your team bond.`,
+    ];
+    const card = document.createElement("article");
+    card.className = "bond-scene";
+    card.innerHTML = `
+      <h4>${companion.name} Bond Arc</h4>
+      <p>Affinity: ${affinity}</p>
+      <p>Unlocked stage: ${unlockedStage}/3</p>
+      <p>${snippets[unlockedStage]}</p>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function renderPets() {
+  const roster = document.getElementById("petRoster");
+  if (!roster) return;
+  roster.innerHTML = "";
+  const ownedIds = Object.keys(state.ownedPets || {});
+  if (!ownedIds.length) {
+    roster.innerHTML = "<article class='pet-card'><p>No pets hatched yet.</p></article>";
+    return;
+  }
+  ownedIds.forEach((id) => {
+    const meta = petCatalog.find((p) => p.id === id);
+    const data = state.ownedPets[id];
+    if (!meta || !data) return;
+    const active = state.activePetId === id;
+    const card = document.createElement("article");
+    card.className = `pet-card ${active ? "active" : ""}`.trim();
+    card.innerHTML = `
+      <h4>${meta.name}</h4>
+      <p>Rarity: ${meta.rarity}</p>
+      <p>${meta.blurb}</p>
+      <p>Copies: ${data.copies}</p>
+      <p>Level: ${data.level} | EXP: ${data.exp}/${data.level * 15}</p>
+      <p>Bonuses: +${meta.hpBonus} HP, +${meta.energyBonus} energy, +${meta.goldBonusPct}% gold</p>
+    `;
+    const btn = document.createElement("button");
+    btn.textContent = active ? "Active Pet" : "Set Active";
+    btn.disabled = active;
+    btn.onclick = () => setActivePet(id);
+    card.appendChild(btn);
+    roster.appendChild(card);
+  });
+}
+
+function renderMiniGameArea() {
+  const area = document.getElementById("miniGamePlayArea");
+  if (!area) return;
+  const s = state.miniGameSession;
+  if (!s) {
+    area.innerHTML = "<p>Pick a mini-game to start an interactive challenge.</p>";
+    return;
+  }
+
+  if (s.type === "rhythm") {
+    area.innerHTML = `
+      <p>Stop the marker in the blue target zone for best rewards.</p>
+      <div class="mini-game-track">
+        <div class="mini-game-target"></div>
+        <div class="mini-game-marker" style="left:${s.markerPos}%"></div>
+      </div>
+      <button id="rhythmStopBtn">Stop Marker</button>
+    `;
+    document.getElementById("rhythmStopBtn").onclick = () => resolveRhythmMiniGame();
+    return;
+  }
+
+  if (s.type === "memory") {
+    const shown = s.sequence.map((x) => x[0]).join(" - ");
+    area.innerHTML = `
+      <p>Memorize this sequence and enter initials (e.g., SMWS):</p>
+      <p><strong>${shown}</strong></p>
+      <input id="memoryInput" type="text" maxlength="4" />
+      <button id="memorySubmitBtn">Submit</button>
+    `;
+    document.getElementById("memorySubmitBtn").onclick = () => {
+      const value = document.getElementById("memoryInput").value;
+      resolveMemoryMiniGame(value);
+    };
+    return;
+  }
+
+  area.innerHTML = `
+    <p>Choose a lane: one lane is safest and gives best rewards.</p>
+    <div class="actions">
+      <button id="lane1Btn">Lane 1</button>
+      <button id="lane2Btn">Lane 2</button>
+      <button id="lane3Btn">Lane 3</button>
+    </div>
+  `;
+  document.getElementById("lane1Btn").onclick = () => resolveRunnerMiniGame(1);
+  document.getElementById("lane2Btn").onclick = () => resolveRunnerMiniGame(2);
+  document.getElementById("lane3Btn").onclick = () => resolveRunnerMiniGame(3);
+}
+
 function render() {
   document.getElementById("playerName").textContent = state.profile.name;
+  document.getElementById("activeCompanionName").textContent = getActiveCompanion()?.name || "None";
   document.getElementById("goldCount").textContent = state.profile.gold;
   document.getElementById("gemCount").textContent = state.profile.gems;
   document.getElementById("playerHp").textContent = Math.max(0, state.player.hp);
@@ -628,11 +1497,28 @@ function render() {
     : "Choose a world to start";
   document.getElementById("battleLog").textContent = state.log.join("\n");
   document.getElementById("burstBtn").disabled = state.player.burst < 100 || state.gameOver;
+  document.getElementById("companionSkillBtn").disabled = state.gameOver || !state.activeWorldId || state.companionSkillUsedThisBattle;
+  const rateUp = companionCatalog.find((c) => c.id === getRateUpCompanionId());
+  document.getElementById("bannerStatus").textContent = `Rate-up banner: ${rateUp?.name || "None"} (${rateUp?.rarity || "N/A"})`;
+  document.getElementById("pityStatus").textContent = `Legendary pity: ${state.summonWithoutLegendary}/40 summons`;
+  ensureMiniGameDay();
+  const activePet = getActivePet();
+  const activePetData = activePet ? state.ownedPets[activePet.id] : null;
+  document.getElementById("activePetStatus").textContent = activePet
+    ? `Active Pet: ${activePet.name} (Lv ${activePetData?.level || 1})`
+    : "Active Pet: None";
+  document.getElementById("miniGameStatus").textContent = `Mini-games today: ${state.miniGamePlaysToday}/6`;
   renderWorlds();
   renderHand();
   renderProgress();
   renderStory();
   renderEconomy();
+  renderDeckBuilder();
+  renderEvents();
+  renderCompanions();
+  renderBondScenes();
+  renderPets();
+  renderMiniGameArea();
   persist();
 }
 
@@ -660,5 +1546,19 @@ document.getElementById("confirmPurchasesToggle").onchange = (event) => {
   persist();
   render();
 };
+document.getElementById("summonSingleBtn").onclick = () => summonCompanions(1);
+document.getElementById("summonTenBtn").onclick = () => summonCompanions(10, 270);
+document.getElementById("companionSkillBtn").onclick = () => useCompanionSkill();
+document.getElementById("hatchPetBtn").onclick = () => hatchPet();
+document.getElementById("feedPetBtn").onclick = () => feedActivePet();
+document.getElementById("trainPetBtn").onclick = () => trainActivePet();
+document.getElementById("rhythmGameBtn").onclick = () => playMiniGame("rhythm");
+document.getElementById("memoryGameBtn").onclick = () => playMiniGame("memory");
+document.getElementById("runnerGameBtn").onclick = () => playMiniGame("runner");
+document.getElementById("joinRoomBtn").onclick = () => joinOnlineRoom();
+document.getElementById("chatSendBtn").onclick = () => sendChat();
+document.getElementById("pingStatusBtn").onclick = () => pingStatus();
+
+connectOnline();
 
 render();
