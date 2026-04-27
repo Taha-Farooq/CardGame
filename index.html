@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arcane Star Academy</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Arcane Star Academy</h1>
+    <div class="profile">
+      <span id="playerName">Mage</span>
+      <span>Gold: <strong id="goldCount">0</strong></span>
+      <span>Gems: <strong id="gemCount">0</strong></span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel worlds">
+      <h2>World Gate</h2>
+      <div id="worldList"></div>
+    </section>
+
+    <section class="panel battle">
+      <h2 id="battleTitle">Choose a world to start</h2>
+      <div class="arena">
+        <div class="fighter">
+          <h3>You</h3>
+          <div class="hp"><span>HP</span><progress id="playerHpBar" max="100" value="100"></progress><strong id="playerHp">100</strong></div>
+          <div class="energy"><span>Energy</span><strong id="playerEnergy">0</strong></div>
+        </div>
+        <div class="fighter">
+          <h3 id="enemyName">Enemy</h3>
+          <div class="hp"><span>HP</span><progress id="enemyHpBar" max="100" value="100"></progress><strong id="enemyHp">100</strong></div>
+          <div class="energy"><span>Energy</span><strong id="enemyEnergy">0</strong></div>
+        </div>
+      </div>
+
+      <div id="hand" class="hand"></div>
+      <div class="actions">
+        <button id="drawBtn">Draw 3</button>
+        <button id="endTurnBtn">End Turn</button>
+        <button id="burstBtn">Burst Ult</button>
+      </div>
+      <pre id="battleLog" class="log"></pre>
+    </section>
+
+    <section class="panel progression">
+      <h2>Progression</h2>
+      <ul id="progressionList"></ul>
+      <h3>Story Journal</h3>
+      <p id="storyChapterTitle"></p>
+      <p id="storyChapterText" class="story-text"></p>
+      <button id="nextStoryBtn">Next Story Beat</button>
+      <button id="resetBtn" class="danger">Reset Save</button>
+    </section>
+  </main>
+
+  <section class="panel economy">
+    <h2>Arcane Exchange</h2>
+    <div class="wallet">
+      <span>Gold: <strong id="walletGold">0</strong></span>
+      <span>Gems: <strong id="walletGems">0</strong></span>
+      <span>Crowns: <strong id="walletCrowns">0</strong></span>
+    </div>
+    <div id="currencyPacks" class="shop-grid"></div>
+
+    <h3>Crown Shop</h3>
+    <div class="shop-filters" id="shopFilters"></div>
+    <div id="crownShop" class="shop-grid"></div>
+
+    <h3>Inventory</h3>
+    <div id="inventoryList" class="inventory-grid"></div>
+
+    <h3>World Quests</h3>
+    <div id="questList" class="quest-grid"></div>
+
+    <h3>Parent Controls</h3>
+    <div class="parent-controls">
+      <label for="spendingCapInput">Weekly Crown Spend Cap</label>
+      <input id="spendingCapInput" type="number" min="0" step="10" />
+      <button id="saveCapBtn">Save Cap</button>
+      <p id="spendStatus"></p>
+      <label class="checkbox">
+        <input id="confirmPurchasesToggle" type="checkbox" />
+        Require confirmation for every crown purchase
+      </label>
+    </div>
+  </section>
+
+  <script src="./script.js"></script>
+</body>
+</html>
