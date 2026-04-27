@@ -5,6 +5,7 @@ const crypto = require("crypto");
 
 const PORT = Number(process.env.PORT || 3000);
 const ROOT = __dirname;
+const MODERATOR_SECRET = String(process.env.MODERATOR_SECRET || "");
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -232,6 +233,19 @@ function sendModeration(socket, action, reason) {
     msg.mutedUntil = socket.__mutedUntil || 0;
   }
   socket.write(encodeWsFrame(JSON.stringify(msg)));
+}
+
+function sendAuthState(socket, ok, reason = "") {
+  socket.write(
+    encodeWsFrame(
+      JSON.stringify({
+        type: "moderatorAuthState",
+        ok,
+        reason,
+        ts: Date.now(),
+      })
+    )
+  );
 }
 
 function applyTemporaryMute(socket, reason, durationMs, username, roomId) {
@@ -513,10 +527,18 @@ server.on("upgrade", (req, socket) => {
     }
 
     if (message.type === "moderationDashboardRequest") {
+      if (!socket.__isModerator) {
+        sendAuthState(socket, false, "Moderator auth required for dashboard.");
+        return;
+      }
       sendModerationDashboard(socket);
     }
 
     if (message.type === "moderationAction") {
+      if (!socket.__isModerator) {
+        sendAuthState(socket, false, "Moderator auth required for actions.");
+        return;
+      }
       const action = String(message.action || "").trim();
       const targetUsername = String(message.targetUsername || "").trim().slice(0, 20);
       const incidentId = String(message.incidentId || "").trim().slice(0, 80);
@@ -541,6 +563,22 @@ server.on("upgrade", (req, socket) => {
         lastKnownIncident: targetSocket.__lastIncidentId || "",
       });
       sendModerationDashboard(socket);
+    }
+
+    if (message.type === "moderatorAuth") {
+      const token = String(message.token || "");
+      if (!MODERATOR_SECRET) {
+        socket.__isModerator = false;
+        sendAuthState(socket, false, "Server MODERATOR_SECRET is not configured.");
+        return;
+      }
+      if (token && token === MODERATOR_SECRET) {
+        socket.__isModerator = true;
+        sendAuthState(socket, true, "Moderator session authenticated.");
+      } else {
+        socket.__isModerator = false;
+        sendAuthState(socket, false, "Invalid moderator token.");
+      }
     }
   });
 

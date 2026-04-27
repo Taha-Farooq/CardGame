@@ -12,6 +12,11 @@ Run as a browser game server (recommended):
 
 Fallback: open `index.html` directly (offline mode, no online plaza).
 
+Optional moderator auth setup:
+
+- Set environment variable `MODERATOR_SECRET` before starting the server.
+- Example (PowerShell): `$env:MODERATOR_SECRET="your-strong-secret"; node server.js`
+
 ## GitHub Pages Hosting
 
 You can host this project on GitHub Pages because the core game is static.
@@ -61,6 +66,7 @@ Notes:
 - Moderator Console panel with live server lobby counts and recent moderation events.
 - Server-side temporary auto-mute escalation for repeated spam/moderation violations.
 - Incident/action traceability with IDs and moderator action history (unmute/escalate).
+- Moderator auth gate for dashboard/actions via server `MODERATOR_SECRET`.
 - Original anime space-fantasy tone inspired by cosmic rail-journey RPG vibes (without using third-party IP assets or names).
 
 ## Bot Council Automation

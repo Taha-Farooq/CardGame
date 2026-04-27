@@ -212,6 +212,8 @@ let online = {
   moderationEvents: [],
   mutedUntil: 0,
   moderationActions: [],
+  isModerator: false,
+  moderatorAuthReason: "",
 };
 
 function applySafetyPreset() {
@@ -397,6 +399,10 @@ function connectOnline() {
       online.moderationSummary = data.summary || null;
       online.moderationEvents = data.events || [];
       online.moderationActions = data.actions || [];
+    } else if (data.type === "moderatorAuthState") {
+      online.isModerator = !!data.ok;
+      online.moderatorAuthReason = data.reason || "";
+      pushOnlineLog(`[Moderation] Auth ${online.isModerator ? "granted" : "denied"}: ${online.moderatorAuthReason || "No details"}`);
     } else if (data.type === "statePing") {
       if (data.from === "__server__" && typeof data.ts === "number") {
         online.lastLatencyMs = Date.now() - data.ts;
@@ -418,12 +424,31 @@ function sendOnline(payload) {
 }
 
 function requestModerationDashboard() {
-  if (online.mode !== "websocket" || !online.connected) return;
+  if (online.mode !== "websocket" || !online.connected || !online.isModerator) return;
   sendOnline({ type: "moderationDashboardRequest" });
 }
 
+function authenticateModerator() {
+  if (online.mode !== "websocket" || !online.connected) {
+    pushOnlineLog("[Moderation] Connect to live WebSocket mode before moderator login.");
+    render();
+    return;
+  }
+  const tokenInput = document.getElementById("moderatorTokenInput");
+  const token = (tokenInput?.value || "").trim();
+  if (!token) {
+    pushOnlineLog("[Moderation] Enter a moderator token.");
+    return;
+  }
+  sendOnline({ type: "moderatorAuth", token });
+}
+
 function runModerationAction(action) {
-  if (online.mode !== "websocket" || !online.connected) return;
+  if (online.mode !== "websocket" || !online.connected || !online.isModerator) {
+    pushOnlineLog("[Moderation] Moderator authentication required.");
+    render();
+    return;
+  }
   const usernameInput = document.getElementById("moderationTargetInput");
   const incidentInput = document.getElementById("moderationIncidentInput");
   const targetUsername = (usernameInput?.value || "").trim().slice(0, 20);
@@ -1979,6 +2004,18 @@ function render() {
       return `[${t}] ${event.id || "act-?"} | ${event.action} | target=${event.targetUsername || "unknown"} | incident=${event.incidentId || "n/a"}`;
     }).join("\n") || "No moderator actions yet.";
   }
+  const authStatus = document.getElementById("moderatorAuthStatus");
+  if (authStatus) {
+    authStatus.textContent = online.isModerator
+      ? `Moderator auth: authenticated (${online.moderatorAuthReason || "ok"})`
+      : `Moderator auth: not authenticated${online.moderatorAuthReason ? ` (${online.moderatorAuthReason})` : ""}`;
+  }
+  const refreshModerationBtn = document.getElementById("refreshModerationBtn");
+  const modUnmuteBtn = document.getElementById("modUnmuteBtn");
+  const modEscalateBtn = document.getElementById("modEscalateBtn");
+  if (refreshModerationBtn) refreshModerationBtn.disabled = !online.isModerator;
+  if (modUnmuteBtn) modUnmuteBtn.disabled = !online.isModerator;
+  if (modEscalateBtn) modEscalateBtn.disabled = !online.isModerator;
   renderWorlds();
   renderHand();
   renderProgress();
@@ -2045,6 +2082,7 @@ document.getElementById("chatSendBtn").onclick = () => sendChat();
 document.getElementById("pingStatusBtn").onclick = () => pingStatus();
 document.getElementById("exportIncidentsBtn").onclick = () => exportIncidentLog();
 document.getElementById("refreshModerationBtn").onclick = () => requestModerationDashboard();
+document.getElementById("moderatorAuthBtn").onclick = () => authenticateModerator();
 document.getElementById("modUnmuteBtn").onclick = () => runModerationAction("unmute");
 document.getElementById("modEscalateBtn").onclick = () => runModerationAction("escalate_suspect");
 
