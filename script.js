@@ -1,30 +1,30 @@
 const worlds = [
-  { id: "academy", name: "Sky Academy", difficulty: 1, unlockGemCost: 0, enemy: "Rookie Duelist", rewardGold: 35, rewardGems: 3, minStoryIndex: 0 },
-  { id: "ember", name: "Ember Wastes", difficulty: 2, unlockGemCost: 20, enemy: "Flare Ronin", rewardGold: 65, rewardGems: 5, minStoryIndex: 1 },
-  { id: "tide", name: "Tide Shrine", difficulty: 3, unlockGemCost: 35, enemy: "Abyss Priestess", rewardGold: 100, rewardGems: 8, minStoryIndex: 2 },
-  { id: "shade", name: "Shade Citadel", difficulty: 4, unlockGemCost: 55, enemy: "Night Marshal", rewardGold: 145, rewardGems: 12, minStoryIndex: 3 },
+  { id: "academy", name: "Nebula Academy", difficulty: 1, unlockGemCost: 0, enemy: "Rookie Duelist", rewardGold: 35, rewardGems: 3, minStoryIndex: 0 },
+  { id: "ember", name: "Cinder Railfields", difficulty: 2, unlockGemCost: 20, enemy: "Flare Ronin", rewardGold: 65, rewardGems: 5, minStoryIndex: 1 },
+  { id: "tide", name: "Tideglass Station", difficulty: 3, unlockGemCost: 35, enemy: "Abyss Priestess", rewardGold: 100, rewardGems: 8, minStoryIndex: 2 },
+  { id: "shade", name: "Umbral Terminus", difficulty: 4, unlockGemCost: 55, enemy: "Night Marshal", rewardGold: 145, rewardGems: 12, minStoryIndex: 3 },
 ];
 
 const storyChapters = [
   {
-    title: "Chapter 1 - The Falling Light",
-    text: "A harmless starshard rain lights up the Academy sky. You and your friends discover one shard pulsing with a strange symbol: the Crest of Eclipse.",
+    title: "Chapter 1 - Platform of Falling Light",
+    text: "A harmless starshard rain lights up Nebula Academy's station canopy. You and your friends discover one shard pulsing with a strange symbol: the Crest of Eclipse.",
   },
   {
-    title: "Chapter 2 - The Vanishing Lessons",
-    text: "Entire pages fade from magical textbooks overnight. Professors whisper about an old spell thief called the Ink Eater returning from the Ember Wastes.",
+    title: "Chapter 2 - Vanishing Tickets",
+    text: "Entire pages fade from magical route logs overnight. Professors whisper about an old spell thief called the Ink Eater returning from the Cinder Railfields.",
   },
   {
-    title: "Chapter 3 - Echoes in the Tide Shrine",
-    text: "Ancient water mirrors show a masked figure gathering lost spells from every world. Their goal is not destruction, but to rewrite how magic chooses its students.",
+    title: "Chapter 3 - Echoes at Tideglass Station",
+    text: "Ancient water mirrors show a masked figure gathering lost spells from every route. Their goal is not destruction, but to rewrite how magic chooses its students.",
   },
   {
-    title: "Chapter 4 - Citadel of Night",
-    text: "In Shade Citadel, you learn the masked figure is Headmage Sol, believed gone for decades. Sol claims magic should belong to everyone, not only the gifted few.",
+    title: "Chapter 4 - Night at Umbral Terminus",
+    text: "At Umbral Terminus, you learn the masked figure is Headmage Sol, believed gone for decades. Sol claims magic should belong to everyone, not only the gifted few.",
   },
   {
-    title: "Chapter 5 - The Promise Star",
-    text: "You and Sol duel beneath a meteor shimmer. No one is harmed; fighters faint and wake safely in healing wards. The final choice is yours: seal magic away, or share it wisely.",
+    title: "Chapter 5 - Promise of the Starline",
+    text: "You and Sol duel beneath a meteor shimmer. No one is harmed; fighters faint and wake safely in healing wards. The final choice is yours: seal magic away, or share it wisely along every starline.",
   },
 ];
 
@@ -72,10 +72,10 @@ const deckCatalog = [
 ];
 
 const worldEvents = [
-  { id: "event-academy", worldId: "academy", title: "Freshman Festival", story: "Friendly duels and bonus training all week.", bonusGold: 20, bonusGems: 2 },
-  { id: "event-ember", worldId: "ember", title: "Ashstorm Alert", story: "Harsh winds increase rewards for brave mages.", bonusGold: 35, bonusGems: 3 },
-  { id: "event-tide", worldId: "tide", title: "Moon-Tide Bloom", story: "Rare tide blossoms grant extra battle payout.", bonusGold: 45, bonusGems: 4 },
-  { id: "event-shade", worldId: "shade", title: "Night Lantern Rite", story: "Citadel guardians grant elite trial rewards.", bonusGold: 60, bonusGems: 5 },
+  { id: "event-academy", worldId: "academy", title: "First Platform Festival", story: "Friendly duels and route drills all week.", bonusGold: 20, bonusGems: 2 },
+  { id: "event-ember", worldId: "ember", title: "Solar Ember Surge", story: "Ion winds raise rewards for brave mages.", bonusGold: 35, bonusGems: 3 },
+  { id: "event-tide", worldId: "tide", title: "Moon-Tide Transit", story: "Rare tide blossoms grant extra battle payout.", bonusGold: 45, bonusGems: 4 },
+  { id: "event-shade", worldId: "shade", title: "Terminus Lantern Rite", story: "Terminus guardians grant elite trial rewards.", bonusGold: 60, bonusGems: 5 },
 ];
 
 const companionCatalog = [
