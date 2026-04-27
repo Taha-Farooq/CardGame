@@ -55,6 +55,7 @@ Notes:
 - Rating-safe style controls: family-safe mode and teen fantasy glamour presentation.
 - Safety Hub with age-band presets, stricter youth defaults, and chat safety filtering.
 - Zero-tolerance moderation: auto-ban on meetup/off-platform solicitation patterns.
+- Under-13 quick-chat only mode, anti-spam chat cooldown/rate limits, and JSON incident log export.
 
 ## Expansion Hooks
 

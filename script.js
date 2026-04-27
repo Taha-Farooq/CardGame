@@ -138,6 +138,15 @@ const hardBanPatterns = [
   /keep (this|it) secret/i,
 ];
 
+const under13QuickChatOptions = [
+  "Good game!",
+  "Need help in battle.",
+  "Nice combo!",
+  "Ready for next round?",
+  "Let's keep it friendly.",
+  "Brb soon.",
+];
+
 const initialState = {
   profile: {
     name: "Mage",
@@ -178,6 +187,9 @@ const initialState = {
   miniGameSession: null,
   moderationScore: 0,
   moderationStrikes: 0,
+  moderationIncidents: [],
+  chatRateLimitWindow: [],
+  lastChatSentAt: 0,
   gameOver: false,
   log: [],
 };
@@ -251,6 +263,20 @@ function log(msg) {
 function pushOnlineLog(message) {
   online.chat.unshift(message);
   online.chat = online.chat.slice(0, 40);
+}
+
+function recordModerationIncident(type, reason, text = "") {
+  const entry = {
+    ts: Date.now(),
+    type,
+    reason,
+    textPreview: (text || "").slice(0, 120),
+    roomId: online.roomId || "",
+    username: online.username || state.profile.name || "Mage",
+    ageBand: state.profile.ageBand || "unknown",
+  };
+  state.moderationIncidents.unshift(entry);
+  state.moderationIncidents = state.moderationIncidents.slice(0, 200);
 }
 
 function connectOnline() {
@@ -374,27 +400,40 @@ function sendChat() {
   const input = document.getElementById("chatInput");
   const text = (input.value || "").trim();
   if (!text) return;
+  if (state.profile.ageBand === "under13") {
+    pushOnlineLog("[Safety] Under-13 profiles use quick chat only.");
+    recordModerationIncident("blocked", "Under-13 free text blocked", text);
+    renderOnline();
+    render();
+    return;
+  }
+  const rateLimit = evaluateRateLimit();
+  if (!rateLimit.allow) {
+    pushOnlineLog(`[Safety] ${rateLimit.reason}`);
+    recordModerationIncident("rate_limited", rateLimit.reason, text);
+    renderOnline();
+    render();
+    return;
+  }
   const moderation = evaluateChatMessage(text);
   if (moderation.action === "ban") {
     applyAutoBan(moderation.reason);
+    recordModerationIncident("auto_ban", moderation.reason, text);
     pushOnlineLog(`[Moderation] Auto-ban triggered: ${moderation.reason}`);
     renderOnline();
     return;
   }
   if (moderation.action === "block") {
     state.moderationScore += moderation.scoreDelta;
+    recordModerationIncident("blocked", moderation.reason, text);
     if (state.moderationScore >= 10) {
       applyAutoBan("Repeated unsafe communication attempts");
+      recordModerationIncident("auto_ban", "Repeated unsafe communication attempts", text);
       pushOnlineLog("[Moderation] Auto-ban triggered by repeated unsafe messaging.");
       renderOnline();
       return;
     }
     pushOnlineLog(`[Safety] Message blocked: ${moderation.reason}`);
-    renderOnline();
-    return;
-  }
-  if (state.profile.ageBand === "under13" && text.length > 90) {
-    pushOnlineLog("[Safety] Under-13 chat is limited to short preset-style messages.");
     renderOnline();
     return;
   }
@@ -404,7 +443,9 @@ function sendChat() {
   } else {
     sendOnline({ type: "chat", text });
   }
+  markChatSent();
   input.value = "";
+  persist();
 }
 
 function evaluateChatMessage(text) {
@@ -420,6 +461,57 @@ function evaluateChatMessage(text) {
   return { action: "allow", reason: "", scoreDelta: 0 };
 }
 
+function evaluateRateLimit() {
+  const now = Date.now();
+  const cooldownMs = 2500;
+  const windowMs = 20000;
+  const maxMessagesPerWindow = 4;
+  const sinceLast = now - (state.lastChatSentAt || 0);
+  if (state.lastChatSentAt && sinceLast < cooldownMs) {
+    const wait = ((cooldownMs - sinceLast) / 1000).toFixed(1);
+    return { allow: false, reason: `Chat cooldown active. Try again in ${wait}s.` };
+  }
+  state.chatRateLimitWindow = (state.chatRateLimitWindow || []).filter((ts) => now - ts <= windowMs);
+  if (state.chatRateLimitWindow.length >= maxMessagesPerWindow) {
+    return { allow: false, reason: "Rate limit reached: max 4 messages every 20 seconds." };
+  }
+  return { allow: true, reason: "" };
+}
+
+function markChatSent() {
+  const now = Date.now();
+  state.lastChatSentAt = now;
+  if (!Array.isArray(state.chatRateLimitWindow)) state.chatRateLimitWindow = [];
+  state.chatRateLimitWindow.push(now);
+  state.chatRateLimitWindow = state.chatRateLimitWindow.slice(-10);
+}
+
+function sendQuickChat(text) {
+  if (state.profile.isBanned) {
+    pushOnlineLog(`[Moderation] Chat blocked: ${state.profile.banReason || "Policy violation"}`);
+    renderOnline();
+    return;
+  }
+  const rateLimit = evaluateRateLimit();
+  if (!rateLimit.allow) {
+    pushOnlineLog(`[Safety] ${rateLimit.reason}`);
+    recordModerationIncident("rate_limited", rateLimit.reason, text);
+    renderOnline();
+    render();
+    return;
+  }
+  if (online.mode === "broadcast") {
+    sendOnline({ type: "chat", roomId: online.roomId, username: online.username, text, ts: Date.now() });
+    pushOnlineLog(`[${new Date().toLocaleTimeString()}] ${online.username}: ${text}`);
+  } else {
+    sendOnline({ type: "chat", text });
+  }
+  markChatSent();
+  persist();
+  renderOnline();
+  render();
+}
+
 function applyAutoBan(reason) {
   state.profile.isBanned = true;
   state.profile.banReason = reason;
@@ -427,7 +519,32 @@ function applyAutoBan(reason) {
   state.profile.ageBand = "unknown";
   state.profile.familySafeStyle = true;
   state.profile.requirePurchaseConfirm = true;
+  recordModerationIncident("auto_ban", reason, "");
   persist();
+}
+
+function exportIncidentLog() {
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    profile: {
+      name: state.profile.name,
+      ageBand: state.profile.ageBand,
+      moderationScore: state.moderationScore,
+      moderationStrikes: state.moderationStrikes,
+      isBanned: state.profile.isBanned,
+      banReason: state.profile.banReason || "",
+    },
+    incidents: state.moderationIncidents || [],
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `arcane-star-incidents-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  pushOnlineLog("[Safety] Incident log exported.");
+  renderOnline();
 }
 
 function pingStatus() {
@@ -1699,10 +1816,32 @@ function render() {
       ? `Moderation: Chat access restricted. Reason: ${state.profile.banReason || "Policy violation"}`
       : "Moderation: No active sanctions.";
   }
+  const incidentLogStatus = document.getElementById("incidentLogStatus");
+  if (incidentLogStatus) {
+    const count = (state.moderationIncidents || []).length;
+    incidentLogStatus.textContent = `Incident log entries: ${count}`;
+  }
   const chatInput = document.getElementById("chatInput");
   const chatSendBtn = document.getElementById("chatSendBtn");
-  if (chatInput) chatInput.disabled = !!state.profile.isBanned;
+  const quickChatBar = document.getElementById("quickChatBar");
+  if (chatInput) {
+    chatInput.disabled = !!state.profile.isBanned || state.profile.ageBand === "under13";
+    chatInput.placeholder = state.profile.ageBand === "under13"
+      ? "Under-13 quick chat enabled"
+      : "Send room message";
+  }
   if (chatSendBtn) chatSendBtn.disabled = !!state.profile.isBanned;
+  if (quickChatBar) {
+    quickChatBar.innerHTML = "";
+    if (state.profile.ageBand === "under13" && !state.profile.isBanned) {
+      under13QuickChatOptions.forEach((text) => {
+        const btn = document.createElement("button");
+        btn.textContent = text;
+        btn.onclick = () => sendQuickChat(text);
+        quickChatBar.appendChild(btn);
+      });
+    }
+  }
   const modeBadge = document.getElementById("serverModeBadge");
   if (modeBadge) {
     modeBadge.classList.remove("mode-live", "mode-pages", "mode-offline");
@@ -1781,6 +1920,7 @@ document.getElementById("runnerGameBtn").onclick = () => playMiniGame("runner");
 document.getElementById("joinRoomBtn").onclick = () => joinOnlineRoom();
 document.getElementById("chatSendBtn").onclick = () => sendChat();
 document.getElementById("pingStatusBtn").onclick = () => pingStatus();
+document.getElementById("exportIncidentsBtn").onclick = () => exportIncidentLog();
 
 connectOnline();
 
