@@ -47,6 +47,23 @@
     <pre id="onlineChatLog" class="log"></pre>
   </section>
 
+  <section class="panel economy">
+    <h2>Safety Hub</h2>
+    <p>Age-aware safety settings. No ID required, but stricter controls are enforced by default.</p>
+    <div class="actions">
+      <label for="ageBandSelect">Age Band</label>
+      <select id="ageBandSelect">
+        <option value="unknown">Prefer not to say</option>
+        <option value="under13">Under 13</option>
+        <option value="13to17">13 to 17</option>
+        <option value="18plus">18+</option>
+      </select>
+      <button id="applySafetyBtn">Apply Safety Preset</button>
+    </div>
+    <p id="safetyModeStatus"></p>
+    <p id="chatSafetyStatus"></p>
+  </section>
+
   <main class="layout">
     <section class="panel worlds">
       <h2>World Gate</h2>

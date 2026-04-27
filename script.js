@@ -114,6 +114,20 @@ const petCatalog = [
   { id: "myth", name: "Mythowl", rarity: "Legendary", hpBonus: 16, energyBonus: 2, goldBonusPct: 10, blurb: "An ancient owl that guides arcane masters." },
 ];
 
+const blockedChatPatterns = [
+  /discord/i,
+  /snapchat|snap/i,
+  /whatsapp/i,
+  /telegram/i,
+  /kik/i,
+  /dm me|private chat|secret chat/i,
+  /send pic|photo of you|selfie/i,
+  /meet up|meet me|come alone/i,
+  /sexual|sexy|nude|naked|hot pics/i,
+  /http:\/\/|https:\/\//i,
+  /\b\d{7,}\b/,
+];
+
 const initialState = {
   profile: {
     name: "Mage",
@@ -126,6 +140,7 @@ const initialState = {
     weeklyCrownSpendCap: 300,
     requirePurchaseConfirm: true,
     familySafeStyle: true,
+    ageBand: "unknown",
   },
   activeWorldId: null,
   player: { hp: 100, maxHp: 100, energy: 1, shield: 0, burst: 0 },
@@ -166,6 +181,18 @@ let online = {
   lastPingSentAt: 0,
   lastLatencyMs: null,
 };
+
+function applySafetyPreset() {
+  const age = state.profile.ageBand;
+  const under18 = age === "under13" || age === "13to17" || age === "unknown";
+  state.profile.familySafeStyle = true;
+  state.profile.requirePurchaseConfirm = under18;
+  if (age === "under13") {
+    state.profile.weeklyCrownSpendCap = Math.min(state.profile.weeklyCrownSpendCap, 120);
+  } else if (age === "13to17") {
+    state.profile.weeklyCrownSpendCap = Math.min(state.profile.weeklyCrownSpendCap, 220);
+  }
+}
 
 function loadState() {
   const raw = localStorage.getItem("arcane-star-save");
@@ -298,7 +325,9 @@ function joinOnlineRoom() {
   const nameInput = document.getElementById("onlineNameInput");
   const roomInput = document.getElementById("roomIdInput");
   const username = (nameInput.value || state.profile.name || "Mage").trim().slice(0, 20);
-  const roomId = (roomInput.value || "academy-hall").trim().slice(0, 30);
+  const rawRoom = (roomInput.value || "academy-hall").trim().slice(0, 30);
+  const roomPrefix = state.profile.ageBand === "18plus" ? "adult-" : "youth-";
+  const roomId = `${roomPrefix}${rawRoom}`.slice(0, 30);
   online.username = username;
   if (!online.connected) {
     pushOnlineLog("[System] Not connected yet, retry in a moment.");
@@ -321,6 +350,16 @@ function sendChat() {
   const input = document.getElementById("chatInput");
   const text = (input.value || "").trim();
   if (!text) return;
+  if (!isChatMessageSafe(text)) {
+    pushOnlineLog("[Safety] Message blocked by safety filter.");
+    renderOnline();
+    return;
+  }
+  if (state.profile.ageBand === "under13" && text.length > 90) {
+    pushOnlineLog("[Safety] Under-13 chat is limited to short preset-style messages.");
+    renderOnline();
+    return;
+  }
   if (online.mode === "broadcast") {
     sendOnline({ type: "chat", roomId: online.roomId, username: online.username, text, ts: Date.now() });
     pushOnlineLog(`[${new Date().toLocaleTimeString()}] ${online.username}: ${text}`);
@@ -328,6 +367,10 @@ function sendChat() {
     sendOnline({ type: "chat", text });
   }
   input.value = "";
+}
+
+function isChatMessageSafe(text) {
+  return !blockedChatPatterns.some((p) => p.test(text));
 }
 
 function pingStatus() {
@@ -1580,6 +1623,17 @@ function render() {
       ? "Style Mode: Family-safe (all-ages)"
       : "Style Mode: Teen fantasy glamour (still rating-safe)";
   }
+  const ageSelect = document.getElementById("ageBandSelect");
+  if (ageSelect) ageSelect.value = state.profile.ageBand || "unknown";
+  const safetyMode = document.getElementById("safetyModeStatus");
+  if (safetyMode) {
+    const label = state.profile.ageBand === "18plus" ? "Adult safety profile" : "Youth safety profile";
+    safetyMode.textContent = `Safety Profile: ${label}`;
+  }
+  const chatSafety = document.getElementById("chatSafetyStatus");
+  if (chatSafety) {
+    chatSafety.textContent = "Chat blocks contact sharing, external apps/links, explicit terms, and meetup language.";
+  }
   const modeBadge = document.getElementById("serverModeBadge");
   if (modeBadge) {
     modeBadge.classList.remove("mode-live", "mode-pages", "mode-offline");
@@ -1635,6 +1689,14 @@ document.getElementById("confirmPurchasesToggle").onchange = (event) => {
 };
 document.getElementById("familyStyleToggle").onchange = (event) => {
   state.profile.familySafeStyle = !!event.target.checked;
+  persist();
+  render();
+};
+document.getElementById("applySafetyBtn").onclick = () => {
+  const age = document.getElementById("ageBandSelect").value;
+  state.profile.ageBand = age;
+  applySafetyPreset();
+  log("Safety preset updated.");
   persist();
   render();
 };

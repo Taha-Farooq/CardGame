@@ -379,6 +379,14 @@ input[type="text"] {
   color: #f8f2ff;
 }
 
+select {
+  padding: 0.42rem;
+  border-radius: 7px;
+  border: 1px solid #4c4f89;
+  background: #0e1020;
+  color: #f8f2ff;
+}
+
 .checkbox {
   display: flex;
   gap: 0.5rem;

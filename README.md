@@ -53,6 +53,7 @@ Notes:
 - Companion art gallery slots (`assets/waifus/`) with portrait rendering hooks.
 - Shiny foil card variants and animated battle hit/attack effects.
 - Rating-safe style controls: family-safe mode and teen fantasy glamour presentation.
+- Safety Hub with age-band presets, stricter youth defaults, and chat safety filtering.
 
 ## Expansion Hooks
 
