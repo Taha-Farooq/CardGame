@@ -58,6 +58,27 @@ Notes:
 - Under-13 quick-chat only mode, anti-spam chat cooldown/rate limits, and JSON incident log export.
 - Original anime space-fantasy tone inspired by cosmic rail-journey RPG vibes (without using third-party IP assets or names).
 
+## Bot Council Automation
+
+This repo now includes a daily automation loop that:
+
+- Loads inspiration research references (`Wizard101`, `Honkai: Star Rail`, `Pokemon`) with anti-copy guardrails.
+- Runs specialist bots for moderation, development, asset-creation, and research.
+- Allows controlled "bot creates bots" spawning from template roles.
+- Sends idea seeds through a multi-bot council scoring step.
+- Promotes passing ideas to a backlog and auto-clears a capped amount each run.
+- Writes timestamped reports to `automation/reports/`.
+
+Run locally:
+
+1. `npm run bots:cycle`
+2. Check `automation/backlog.json`
+3. Check latest report in `automation/reports/`
+
+GitHub Actions:
+
+- `.github/workflows/bot-cycle.yml` runs daily and on manual dispatch.
+
 ## Expansion Hooks
 
 - Add more worlds to `worlds` in `script.js`.

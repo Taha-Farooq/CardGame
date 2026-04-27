@@ -1,0 +1,52 @@
+{
+  "createdAt": "2026-04-27T00:00:00.000Z",
+  "updatedAt": "2026-04-27T05:33:35.398Z",
+  "items": [
+    {
+      "ideaId": "idea-001",
+      "title": "Constellation Trial Seasons",
+      "summary": "Add rotating season tracks with route-themed missions, weekly modifiers, and cosmetic-only reward rails.",
+      "tags": [
+        "systems",
+        "retention",
+        "economy",
+        "safety"
+      ],
+      "score": 7.14,
+      "status": "completed",
+      "promotedAt": "2026-04-27T05:33:35.398Z",
+      "completedAt": "2026-04-27T05:33:35.398Z",
+      "outcome": "Autocleared by bot cycle with stub implementation checklist generated."
+    },
+    {
+      "ideaId": "idea-003",
+      "title": "Guild Expedition Rail",
+      "summary": "Co-op async expedition board with moderation-safe emotes and no private external contact channels.",
+      "tags": [
+        "chat",
+        "abuse-prevention",
+        "systems",
+        "genre"
+      ],
+      "score": 6.63,
+      "status": "completed",
+      "promotedAt": "2026-04-27T05:33:35.398Z",
+      "completedAt": "2026-04-27T05:33:35.398Z",
+      "outcome": "Autocleared by bot cycle with stub implementation checklist generated."
+    }
+  ],
+  "history": [
+    {
+      "ideaId": "idea-001",
+      "action": "autoclear",
+      "at": "2026-04-27T05:33:35.398Z",
+      "details": "Moved from ready to completed by daily cycle."
+    },
+    {
+      "ideaId": "idea-003",
+      "action": "autoclear",
+      "at": "2026-04-27T05:33:35.398Z",
+      "details": "Moved from ready to completed by daily cycle."
+    }
+  ]
+}

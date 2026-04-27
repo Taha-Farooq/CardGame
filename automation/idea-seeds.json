@@ -1,0 +1,28 @@
+{
+  "ideas": [
+    {
+      "id": "idea-001",
+      "title": "Constellation Trial Seasons",
+      "summary": "Add rotating season tracks with route-themed missions, weekly modifiers, and cosmetic-only reward rails.",
+      "tags": ["systems", "retention", "economy", "safety"]
+    },
+    {
+      "id": "idea-002",
+      "title": "Companion Relic Forge",
+      "summary": "Craft relic loadouts with readable stat budgets and age-safe progression pacing.",
+      "tags": ["combat", "scalability", "style", "benchmark"]
+    },
+    {
+      "id": "idea-003",
+      "title": "Guild Expedition Rail",
+      "summary": "Co-op async expedition board with moderation-safe emotes and no private external contact channels.",
+      "tags": ["chat", "abuse-prevention", "systems", "genre"]
+    },
+    {
+      "id": "idea-004",
+      "title": "Arcade Creator Toolkit",
+      "summary": "Data-driven mini-game templates so designers can ship new events without changing core code.",
+      "tags": ["pipeline", "performance", "scalability", "ui"]
+    }
+  ]
+}

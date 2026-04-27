@@ -1,0 +1,38 @@
+{
+  "updatedAt": "2026-04-27T00:00:00.000Z",
+  "sources": [
+    {
+      "name": "Wizard101",
+      "useFor": [
+        "World-based progression arcs",
+        "Layered monetization hooks with parental guardrails",
+        "Pet and side-activity loops"
+      ],
+      "avoid": [
+        "Direct naming, lore, classes, or visual mimicry"
+      ]
+    },
+    {
+      "name": "Honkai: Star Rail",
+      "useFor": [
+        "Polished sci-fantasy presentation rhythm",
+        "Cohesive faction storytelling",
+        "Banner cadence and event pacing references"
+      ],
+      "avoid": [
+        "Direct character archetype clones, UI copying, or trademarked terms"
+      ]
+    },
+    {
+      "name": "Pokemon",
+      "useFor": [
+        "Collection clarity and progression readability",
+        "Accessible onboarding and progression depth",
+        "Companion identity and roster strategy"
+      ],
+      "avoid": [
+        "Creature likeness, naming, type chart copying, or battle flow duplication"
+      ]
+    }
+  ]
+}

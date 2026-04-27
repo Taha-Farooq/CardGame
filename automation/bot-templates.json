@@ -1,0 +1,32 @@
+{
+  "bots": [
+    {
+      "id": "mod-guardian",
+      "role": "moderation",
+      "focusTags": ["safety", "chat", "abuse-prevention", "compliance"],
+      "weight": 1.2
+    },
+    {
+      "id": "dev-architect",
+      "role": "development",
+      "focusTags": ["combat", "systems", "scalability", "performance"],
+      "weight": 1.0
+    },
+    {
+      "id": "asset-director",
+      "role": "asset-creation",
+      "focusTags": ["style", "ui", "animation", "pipeline"],
+      "weight": 0.9
+    },
+    {
+      "id": "research-scout",
+      "role": "research",
+      "focusTags": ["benchmark", "genre", "retention", "economy"],
+      "weight": 1.1
+    }
+  ],
+  "metaSpawner": {
+    "enabled": true,
+    "maxNewBotsPerRun": 2
+  }
+}
