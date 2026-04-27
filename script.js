@@ -128,6 +128,16 @@ const blockedChatPatterns = [
   /\b\d{7,}\b/,
 ];
 
+const hardBanPatterns = [
+  /meet (you|u) (outside|irl|in person)/i,
+  /come to (my|the) (house|place)/i,
+  /where do you live|address/i,
+  /add me on|text me on|call me on/i,
+  /send me your (number|phone|snap|discord)/i,
+  /don't tell (your|ur) (parents|mom|dad)/i,
+  /keep (this|it) secret/i,
+];
+
 const initialState = {
   profile: {
     name: "Mage",
@@ -141,6 +151,8 @@ const initialState = {
     requirePurchaseConfirm: true,
     familySafeStyle: true,
     ageBand: "unknown",
+    isBanned: false,
+    banReason: "",
   },
   activeWorldId: null,
   player: { hp: 100, maxHp: 100, energy: 1, shield: 0, burst: 0 },
@@ -164,6 +176,8 @@ const initialState = {
   miniGamePlaysToday: 0,
   miniGameDayKey: "",
   miniGameSession: null,
+  moderationScore: 0,
+  moderationStrikes: 0,
   gameOver: false,
   log: [],
 };
@@ -322,6 +336,11 @@ function sendOnline(payload) {
 }
 
 function joinOnlineRoom() {
+  if (state.profile.isBanned) {
+    pushOnlineLog(`[Moderation] Access restricted: ${state.profile.banReason || "Policy violation"}`);
+    renderOnline();
+    return;
+  }
   const nameInput = document.getElementById("onlineNameInput");
   const roomInput = document.getElementById("roomIdInput");
   const username = (nameInput.value || state.profile.name || "Mage").trim().slice(0, 20);
@@ -347,11 +366,30 @@ function joinOnlineRoom() {
 }
 
 function sendChat() {
+  if (state.profile.isBanned) {
+    pushOnlineLog(`[Moderation] Chat blocked: ${state.profile.banReason || "Policy violation"}`);
+    renderOnline();
+    return;
+  }
   const input = document.getElementById("chatInput");
   const text = (input.value || "").trim();
   if (!text) return;
-  if (!isChatMessageSafe(text)) {
-    pushOnlineLog("[Safety] Message blocked by safety filter.");
+  const moderation = evaluateChatMessage(text);
+  if (moderation.action === "ban") {
+    applyAutoBan(moderation.reason);
+    pushOnlineLog(`[Moderation] Auto-ban triggered: ${moderation.reason}`);
+    renderOnline();
+    return;
+  }
+  if (moderation.action === "block") {
+    state.moderationScore += moderation.scoreDelta;
+    if (state.moderationScore >= 10) {
+      applyAutoBan("Repeated unsafe communication attempts");
+      pushOnlineLog("[Moderation] Auto-ban triggered by repeated unsafe messaging.");
+      renderOnline();
+      return;
+    }
+    pushOnlineLog(`[Safety] Message blocked: ${moderation.reason}`);
     renderOnline();
     return;
   }
@@ -369,8 +407,27 @@ function sendChat() {
   input.value = "";
 }
 
-function isChatMessageSafe(text) {
-  return !blockedChatPatterns.some((p) => p.test(text));
+function evaluateChatMessage(text) {
+  const normalized = text.trim();
+  if (!normalized) return { action: "allow", reason: "", scoreDelta: 0 };
+
+  if (hardBanPatterns.some((p) => p.test(normalized))) {
+    return { action: "ban", reason: "Attempted to move contact outside the game or arrange meetup", scoreDelta: 100 };
+  }
+  if (blockedChatPatterns.some((p) => p.test(normalized))) {
+    return { action: "block", reason: "External contact/off-platform language is not allowed", scoreDelta: 4 };
+  }
+  return { action: "allow", reason: "", scoreDelta: 0 };
+}
+
+function applyAutoBan(reason) {
+  state.profile.isBanned = true;
+  state.profile.banReason = reason;
+  state.moderationStrikes += 1;
+  state.profile.ageBand = "unknown";
+  state.profile.familySafeStyle = true;
+  state.profile.requirePurchaseConfirm = true;
+  persist();
 }
 
 function pingStatus() {
@@ -392,9 +449,10 @@ function renderOnline() {
   const presence = document.getElementById("roomPresence");
   const chat = document.getElementById("onlineChatLog");
   if (!status || !presence || !chat || !health) return;
+  const bannedTag = state.profile.isBanned ? " | CHAT RESTRICTED" : "";
   status.textContent = online.connected
-    ? `Connected (${online.mode})${online.roomId ? ` | Room: ${online.roomId}` : ""}`
-    : "Not connected";
+    ? `Connected (${online.mode})${online.roomId ? ` | Room: ${online.roomId}` : ""}${bannedTag}`
+    : `Not connected${bannedTag}`;
   if (online.connected && online.mode === "websocket") {
     health.textContent = online.lastLatencyMs == null ? "Health: connected" : `Health: ${online.lastLatencyMs} ms`;
   } else if (online.connected && online.mode === "broadcast") {
@@ -1632,8 +1690,19 @@ function render() {
   }
   const chatSafety = document.getElementById("chatSafetyStatus");
   if (chatSafety) {
-    chatSafety.textContent = "Chat blocks contact sharing, external apps/links, explicit terms, and meetup language.";
+    const strikeInfo = `Risk score: ${state.moderationScore} | Strikes: ${state.moderationStrikes}`;
+    chatSafety.textContent = `Chat blocks contact sharing, external apps/links, and meetup language. ${strikeInfo}`;
   }
+  const banStatus = document.getElementById("banStatus");
+  if (banStatus) {
+    banStatus.textContent = state.profile.isBanned
+      ? `Moderation: Chat access restricted. Reason: ${state.profile.banReason || "Policy violation"}`
+      : "Moderation: No active sanctions.";
+  }
+  const chatInput = document.getElementById("chatInput");
+  const chatSendBtn = document.getElementById("chatSendBtn");
+  if (chatInput) chatInput.disabled = !!state.profile.isBanned;
+  if (chatSendBtn) chatSendBtn.disabled = !!state.profile.isBanned;
   const modeBadge = document.getElementById("serverModeBadge");
   if (modeBadge) {
     modeBadge.classList.remove("mode-live", "mode-pages", "mode-offline");
