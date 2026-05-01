@@ -1,0 +1,293 @@
+{
+  "runAt": "2026-05-01T07:38:05.907Z",
+  "botCount": 6,
+  "bots": [
+    {
+      "id": "mod-guardian",
+      "role": "moderation",
+      "focusTags": [
+        "safety",
+        "chat",
+        "abuse-prevention",
+        "compliance"
+      ],
+      "weight": 1.2
+    },
+    {
+      "id": "dev-architect",
+      "role": "development",
+      "focusTags": [
+        "combat",
+        "systems",
+        "scalability",
+        "performance"
+      ],
+      "weight": 1
+    },
+    {
+      "id": "asset-director",
+      "role": "asset-creation",
+      "focusTags": [
+        "style",
+        "ui",
+        "animation",
+        "pipeline"
+      ],
+      "weight": 0.9
+    },
+    {
+      "id": "research-scout",
+      "role": "research",
+      "focusTags": [
+        "benchmark",
+        "genre",
+        "retention",
+        "economy"
+      ],
+      "weight": 1.1
+    },
+    {
+      "id": "qa-sentinel",
+      "role": "validation",
+      "focusTags": [
+        "performance",
+        "compliance",
+        "systems"
+      ],
+      "weight": 1
+    },
+    {
+      "id": "economy-auditor",
+      "role": "economy",
+      "focusTags": [
+        "economy",
+        "retention",
+        "benchmark"
+      ],
+      "weight": 1
+    }
+  ],
+  "researchDigest": [
+    {
+      "source": "Wizard101",
+      "recommendedPatterns": [
+        "World-based progression arcs",
+        "Layered monetization hooks with parental guardrails",
+        "Pet and side-activity loops"
+      ],
+      "nonCopyingGuardrails": [
+        "Direct naming, lore, classes, or visual mimicry"
+      ]
+    },
+    {
+      "source": "Honkai: Star Rail",
+      "recommendedPatterns": [
+        "Polished sci-fantasy presentation rhythm",
+        "Cohesive faction storytelling",
+        "Banner cadence and event pacing references"
+      ],
+      "nonCopyingGuardrails": [
+        "Direct character archetype clones, UI copying, or trademarked terms"
+      ]
+    },
+    {
+      "source": "Pokemon",
+      "recommendedPatterns": [
+        "Collection clarity and progression readability",
+        "Accessible onboarding and progression depth",
+        "Companion identity and roster strategy"
+      ],
+      "nonCopyingGuardrails": [
+        "Creature likeness, naming, type chart copying, or battle flow duplication"
+      ]
+    }
+  ],
+  "councilDecisions": [
+    {
+      "ideaId": "idea-001",
+      "title": "Constellation Trial Seasons",
+      "averageScore": 7.14,
+      "pass": true,
+      "reviews": [
+        {
+          "botId": "mod-guardian",
+          "role": "moderation",
+          "score": 7.92,
+          "rationale": "moderation reviewed idea-001 with 1 focus-tag matches."
+        },
+        {
+          "botId": "dev-architect",
+          "role": "development",
+          "score": 6.6,
+          "rationale": "development reviewed idea-001 with 1 focus-tag matches."
+        },
+        {
+          "botId": "asset-director",
+          "role": "asset-creation",
+          "score": 4.5,
+          "rationale": "asset-creation reviewed idea-001 with 0 focus-tag matches."
+        },
+        {
+          "botId": "research-scout",
+          "role": "research",
+          "score": 9.02,
+          "rationale": "research reviewed idea-001 with 2 focus-tag matches."
+        },
+        {
+          "botId": "qa-sentinel",
+          "role": "validation",
+          "score": 6.6,
+          "rationale": "validation reviewed idea-001 with 1 focus-tag matches."
+        },
+        {
+          "botId": "economy-auditor",
+          "role": "economy",
+          "score": 8.2,
+          "rationale": "economy reviewed idea-001 with 2 focus-tag matches."
+        }
+      ],
+      "councilDecision": "promote_to_backlog"
+    },
+    {
+      "ideaId": "idea-002",
+      "title": "Companion Relic Forge",
+      "averageScore": 6.5,
+      "pass": false,
+      "reviews": [
+        {
+          "botId": "mod-guardian",
+          "role": "moderation",
+          "score": 6,
+          "rationale": "moderation reviewed idea-002 with 0 focus-tag matches."
+        },
+        {
+          "botId": "dev-architect",
+          "role": "development",
+          "score": 8.2,
+          "rationale": "development reviewed idea-002 with 2 focus-tag matches."
+        },
+        {
+          "botId": "asset-director",
+          "role": "asset-creation",
+          "score": 5.94,
+          "rationale": "asset-creation reviewed idea-002 with 1 focus-tag matches."
+        },
+        {
+          "botId": "research-scout",
+          "role": "research",
+          "score": 7.26,
+          "rationale": "research reviewed idea-002 with 1 focus-tag matches."
+        },
+        {
+          "botId": "qa-sentinel",
+          "role": "validation",
+          "score": 5,
+          "rationale": "validation reviewed idea-002 with 0 focus-tag matches."
+        },
+        {
+          "botId": "economy-auditor",
+          "role": "economy",
+          "score": 6.6,
+          "rationale": "economy reviewed idea-002 with 1 focus-tag matches."
+        }
+      ],
+      "councilDecision": "revise_and_retry"
+    },
+    {
+      "ideaId": "idea-003",
+      "title": "Guild Expedition Rail",
+      "averageScore": 6.63,
+      "pass": true,
+      "reviews": [
+        {
+          "botId": "mod-guardian",
+          "role": "moderation",
+          "score": 9.84,
+          "rationale": "moderation reviewed idea-003 with 2 focus-tag matches."
+        },
+        {
+          "botId": "dev-architect",
+          "role": "development",
+          "score": 6.6,
+          "rationale": "development reviewed idea-003 with 1 focus-tag matches."
+        },
+        {
+          "botId": "asset-director",
+          "role": "asset-creation",
+          "score": 4.5,
+          "rationale": "asset-creation reviewed idea-003 with 0 focus-tag matches."
+        },
+        {
+          "botId": "research-scout",
+          "role": "research",
+          "score": 7.26,
+          "rationale": "research reviewed idea-003 with 1 focus-tag matches."
+        },
+        {
+          "botId": "qa-sentinel",
+          "role": "validation",
+          "score": 6.6,
+          "rationale": "validation reviewed idea-003 with 1 focus-tag matches."
+        },
+        {
+          "botId": "economy-auditor",
+          "role": "economy",
+          "score": 5,
+          "rationale": "economy reviewed idea-003 with 0 focus-tag matches."
+        }
+      ],
+      "councilDecision": "promote_to_backlog"
+    },
+    {
+      "ideaId": "idea-004",
+      "title": "Arcade Creator Toolkit",
+      "averageScore": 6.45,
+      "pass": false,
+      "reviews": [
+        {
+          "botId": "mod-guardian",
+          "role": "moderation",
+          "score": 6,
+          "rationale": "moderation reviewed idea-004 with 0 focus-tag matches."
+        },
+        {
+          "botId": "dev-architect",
+          "role": "development",
+          "score": 8.2,
+          "rationale": "development reviewed idea-004 with 2 focus-tag matches."
+        },
+        {
+          "botId": "asset-director",
+          "role": "asset-creation",
+          "score": 7.38,
+          "rationale": "asset-creation reviewed idea-004 with 2 focus-tag matches."
+        },
+        {
+          "botId": "research-scout",
+          "role": "research",
+          "score": 5.5,
+          "rationale": "research reviewed idea-004 with 0 focus-tag matches."
+        },
+        {
+          "botId": "qa-sentinel",
+          "role": "validation",
+          "score": 6.6,
+          "rationale": "validation reviewed idea-004 with 1 focus-tag matches."
+        },
+        {
+          "botId": "economy-auditor",
+          "role": "economy",
+          "score": 5,
+          "rationale": "economy reviewed idea-004 with 0 focus-tag matches."
+        }
+      ],
+      "councilDecision": "revise_and_retry"
+    }
+  ],
+  "backlogSummary": {
+    "total": 2,
+    "ready": 0,
+    "completed": 2,
+    "clearedThisRun": 0
+  }
+}
